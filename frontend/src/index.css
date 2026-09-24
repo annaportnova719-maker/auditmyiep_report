@@ -1,0 +1,134 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 100 22% 96%;
+    --foreground: 172 35% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 172 35% 10%;
+    --primary: 175 70% 21%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 100 20% 94%;
+    --secondary-foreground: 172 35% 10%;
+    --muted: 100 16% 94%;
+    --muted-foreground: 172 12% 38%;
+    --accent: 32 75% 45%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 4 60% 46%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 100 15% 87%;
+    --input: 100 15% 87%;
+    --ring: 175 70% 21%;
+    --radius: 0.85rem;
+
+    --brand: 175 70% 21%;
+    --brand-soft: 172 42% 93%;
+    --gold: 32 75% 45%;
+    --gold-soft: 38 78% 93%;
+    --good: 152 58% 27%;
+    --good-bg: 150 42% 93%;
+    --warn: 30 78% 40%;
+    --warn-bg: 36 82% 92%;
+    --crit: 4 60% 46%;
+    --crit-bg: 6 62% 94%;
+
+    --font-heading: 'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif;
+    --font-body: 'Public Sans', ui-sans-serif, system-ui, sans-serif;
+    --font-display: 'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif;
+  }
+
+  .dark {
+    --background: 175 30% 8%;
+    --foreground: 140 20% 92%;
+    --card: 178 28% 11%;
+    --card-foreground: 140 20% 92%;
+    --primary: 170 55% 45%;
+    --primary-foreground: 175 30% 8%;
+    --secondary: 178 22% 16%;
+    --secondary-foreground: 140 20% 92%;
+    --muted: 178 22% 16%;
+    --muted-foreground: 150 12% 62%;
+    --accent: 37 70% 55%;
+    --accent-foreground: 175 30% 8%;
+    --destructive: 8 55% 55%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 178 18% 22%;
+    --input: 178 18% 22%;
+    --ring: 170 55% 45%;
+
+    --brand: 170 55% 45%;
+    --brand-soft: 175 30% 16%;
+    --gold: 37 70% 55%;
+    --gold-soft: 35 40% 18%;
+    --good: 150 50% 50%;
+    --good-bg: 150 30% 16%;
+    --warn: 42 80% 55%;
+    --warn-bg: 38 40% 16%;
+    --crit: 10 60% 58%;
+    --crit-bg: 10 35% 16%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply text-foreground font-body antialiased;
+    background-color: hsl(var(--background));
+    background-image:
+      radial-gradient(ellipse 900px 500px at 12% -8%, hsl(var(--brand) / 0.07), transparent 60%),
+      radial-gradient(ellipse 800px 500px at 100% 0%, hsl(var(--gold) / 0.06), transparent 55%);
+    background-attachment: fixed;
+  }
+
+  h1, h2, h3, h4 {
+    @apply font-heading;
+  }
+}
+
+@layer utilities {
+  .font-heading { font-family: var(--font-heading); }
+  .font-display { font-family: var(--font-display); }
+  .tnum { font-variant-numeric: tabular-nums; }
+  .shadow-brand { box-shadow: 0 1px 2px hsl(var(--brand) / 0.04), 0 12px 32px -8px hsl(var(--brand) / 0.16); }
+}
+
+@keyframes auditPulse {
+  0%, 100% { opacity: 0.35; transform: translateY(0); }
+  50% { opacity: 1; transform: translateY(-2px); }
+}
+.audit-step-active { animation: auditPulse 1.6s ease-in-out infinite; }
+
+.print-only { display: none; }
+
+@media print {
+  .print-only { display: block; }
+  .no-print { display: none !important; }
+  .print-full { width: 100% !important; max-width: 100% !important; }
+  .drawer > .drawer-body { display: block !important; }
+  body { background: #fff !important; }
+  /* The report screen only shows one tab panel (Overview, or one section)
+     on screen at a time. Printing needs everything, so every panel is
+     forced visible regardless of which one is "active." */
+  .tab-panel { display: block !important; }
+
+  /* Keep each little box together instead of letting a browser's print
+     engine cut it in half across a page boundary. The real downloadable
+     PDF is now generated server-side (see the Download PDF button), which
+     controls this properly — these rules are just a fallback for anyone
+     who prints with Ctrl/Cmd+P instead. break-inside is the modern
+     property; page-break-inside is the older name some engines still
+     look for. */
+  .card,
+  .drawer,
+  .rounded-2xl,
+  .rounded-xl,
+  .rounded-lg {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+}

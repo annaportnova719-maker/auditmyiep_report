@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+backend/.env
+backend/uploads/
+backend/marketing_emails.csv
+backend/used_payments.csv
+
+# Node
+frontend/node_modules/
+frontend/dist/
+
+# Mac
+.DS_Store
+
+# Test files
+test_email.py
