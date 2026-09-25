@@ -735,12 +735,25 @@ def send_email(to_email: str, subject: str, html_body: str, attachment=None) -> 
         part.add_header("Content-Disposition", "attachment", filename=filename)
         msg.attach(part)
 
-    try:
-        with smtplib.SMTP_SSL("smtp.zoho.com", 465) as server:
-            server.login(ZOHO_EMAIL, ZOHO_APP_PASSWORD)
-            server.sendmail(ZOHO_EMAIL, [to_email], msg.as_string())
-    except Exception as e:
-        raise RuntimeError(f"Could not send the email: {e}")
+    last_err = None
+    # Try port 465 (SSL) then 587 (STARTTLS) — Railway may block one
+    for attempt in [("ssl", 465), ("starttls", 587)]:
+        try:
+            kind, port = attempt
+            if kind == "ssl":
+                with smtplib.SMTP_SSL("smtp.zoho.com", port, timeout=15) as server:
+                    server.login(ZOHO_EMAIL, ZOHO_APP_PASSWORD)
+                    server.sendmail(ZOHO_EMAIL, [to_email], msg.as_string())
+            else:
+                with smtplib.SMTP("smtp.zoho.com", port, timeout=15) as server:
+                    server.ehlo()
+                    server.starttls()
+                    server.login(ZOHO_EMAIL, ZOHO_APP_PASSWORD)
+                    server.sendmail(ZOHO_EMAIL, [to_email], msg.as_string())
+            return  # success
+        except Exception as e:
+            last_err = e
+    raise RuntimeError(f"Could not send the email: {last_err}")
 
 
 def append_marketing_email(email: str) -> None:

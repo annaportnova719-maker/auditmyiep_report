@@ -6,9 +6,10 @@ import RoomPlaybook from '@/components/audit/RoomPlaybook';
 import { scoreTextColor } from '@/lib/scoreColors';
 import { useI18n } from '@/lib/i18n';
 
-const SECTION_DETAIL_URL = 'http://127.0.0.1:5001/api/section-detail';
-const EMAIL_REPORT_URL = 'http://127.0.0.1:5001/api/email-report';
-const REPORT_PDF_URL = 'http://127.0.0.1:5001/api/report-pdf';
+const API_BASE = import.meta.env.VITE_API_BASE || '/api';
+const SECTION_DETAIL_URL = `${API_BASE}/section-detail`;
+const EMAIL_REPORT_URL = `${API_BASE}/email-report`;
+const REPORT_PDF_URL = `${API_BASE}/report-pdf`;
 
 function colorFor(score) {
   if (score >= 75) return 'var(--good)';
