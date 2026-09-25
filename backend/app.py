@@ -786,6 +786,8 @@ def send_email(to_email: str, subject: str, html_body: str, attachment=None) -> 
         headers={
             "Authorization": f"Bearer {RESEND_API_KEY}",
             "Content-Type": "application/json",
+            "Accept": "application/json",
+            "User-Agent": "AuditMyIEP/1.0",
         },
         method="POST",
     )
