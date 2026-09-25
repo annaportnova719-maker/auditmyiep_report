@@ -203,6 +203,13 @@ def _verify_paid_or_error(payment_intent_id: str):
 
 ZOHO_EMAIL = os.environ.get("ZOHO_EMAIL")  # e.g. help@auditmyiep.com
 ZOHO_APP_PASSWORD = os.environ.get("ZOHO_APP_PASSWORD")
+
+# Resend — HTTP-based email (works on Railway; SMTP ports are blocked there).
+RESEND_API_KEY = os.environ.get("RESEND_API_KEY")
+# Until auditmyiep.com is verified in Resend, sends come from Resend's shared
+# test domain. Once the domain is verified, set RESEND_FROM to a
+# help@auditmyiep.com address in Railway and it takes over automatically.
+RESEND_FROM = os.environ.get("RESEND_FROM", "AuditMyIEP <onboarding@resend.dev>")
 MARKETING_LIST_PATH = os.path.join(os.path.dirname(__file__), "marketing_emails.csv")
 
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
@@ -745,50 +752,52 @@ def build_report_pdf(report: dict, section_details: dict) -> bytes:
 
 
 def send_email(to_email: str, subject: str, html_body: str, attachment=None) -> None:
-    """The only place this app sends email. `attachment`, if given, is
-    (pdf_bytes, filename) and is attached as a real PDF file — this is what
-    replaced dumping the whole report into the email body. Raises
+    """The only place this app sends email. Uses Resend's HTTP API (port 443)
+    because Railway blocks the SMTP ports Zoho needs. `attachment`, if given,
+    is (pdf_bytes, filename) and is attached as a real PDF file. Raises
     RuntimeError with a parent-safe message on any failure."""
-    if not ZOHO_EMAIL or not ZOHO_APP_PASSWORD:
+    if not RESEND_API_KEY:
         raise RuntimeError(
-            "Email sending isn't set up yet on this server (missing ZOHO_EMAIL / "
-            "ZOHO_APP_PASSWORD in backend/.env)."
+            "Email sending isn't set up yet on this server (missing RESEND_API_KEY)."
         )
 
-    msg = MIMEMultipart("mixed")
-    msg["Subject"] = subject
-    msg["From"] = ZOHO_EMAIL
-    msg["To"] = to_email
+    import json
+    import urllib.request
+    import urllib.error
 
-    alt = MIMEMultipart("alternative")
-    alt.attach(MIMEText(html_body, "html"))
-    msg.attach(alt)
+    payload = {
+        "from": RESEND_FROM,
+        "to": [to_email],
+        "subject": subject,
+        "html": html_body,
+    }
 
     if attachment:
         pdf_bytes, filename = attachment
-        part = MIMEApplication(pdf_bytes, _subtype="pdf")
-        part.add_header("Content-Disposition", "attachment", filename=filename)
-        msg.attach(part)
+        payload["attachments"] = [{
+            "filename": filename,
+            "content": base64.standard_b64encode(pdf_bytes).decode("utf-8"),
+        }]
 
-    last_err = None
-    # Try port 465 (SSL) then 587 (STARTTLS) — Railway may block one
-    for attempt in [("ssl", 465), ("starttls", 587)]:
-        try:
-            kind, port = attempt
-            if kind == "ssl":
-                with smtplib.SMTP_SSL("smtp.zoho.com", port, timeout=15) as server:
-                    server.login(ZOHO_EMAIL, ZOHO_APP_PASSWORD)
-                    server.sendmail(ZOHO_EMAIL, [to_email], msg.as_string())
-            else:
-                with smtplib.SMTP("smtp.zoho.com", port, timeout=15) as server:
-                    server.ehlo()
-                    server.starttls()
-                    server.login(ZOHO_EMAIL, ZOHO_APP_PASSWORD)
-                    server.sendmail(ZOHO_EMAIL, [to_email], msg.as_string())
-            return  # success
-        except Exception as e:
-            last_err = e
-    raise RuntimeError(f"Could not send the email: {last_err}")
+    data = json.dumps(payload).encode("utf-8")
+    req = urllib.request.Request(
+        "https://api.resend.com/emails",
+        data=data,
+        headers={
+            "Authorization": f"Bearer {RESEND_API_KEY}",
+            "Content-Type": "application/json",
+        },
+        method="POST",
+    )
+
+    try:
+        with urllib.request.urlopen(req, timeout=20) as resp:
+            resp.read()  # 200 OK — email accepted by Resend
+    except urllib.error.HTTPError as e:
+        body = e.read().decode("utf-8", "replace")
+        raise RuntimeError(f"Could not send the email: {e.code} {body}")
+    except Exception as e:
+        raise RuntimeError(f"Could not send the email: {e}")
 
 
 def append_marketing_email(email: str) -> None:
@@ -1054,23 +1063,17 @@ def serve_react(path):
 
 @app.route("/api/test-email", methods=["GET"])
 def test_email():
-    """Temporary diagnostic endpoint."""
-    import smtplib, traceback
-    results = []
-    for kind, port in [("ssl", 465), ("starttls", 587)]:
-        try:
-            if kind == "ssl":
-                with smtplib.SMTP_SSL("smtp.zoho.com", port, timeout=15) as server:
-                    server.login(ZOHO_EMAIL, ZOHO_APP_PASSWORD)
-            else:
-                with smtplib.SMTP("smtp.zoho.com", port, timeout=15) as server:
-                    server.ehlo()
-                    server.starttls()
-                    server.login(ZOHO_EMAIL, ZOHO_APP_PASSWORD)
-            results.append({"port": port, "status": "connected"})
-        except Exception as e:
-            results.append({"port": port, "status": "failed", "error": str(e)})
-    return jsonify({"zoho_email": ZOHO_EMAIL, "has_password": bool(ZOHO_APP_PASSWORD), "results": results})
+    """Temporary diagnostic endpoint — sends a real test email via Resend."""
+    to = request.args.get("to", "help@auditmyiep.com")
+    try:
+        send_email(
+            to_email=to,
+            subject="AuditMyIEP test email",
+            html_body="<p>If you're reading this, Resend email is working. \u2705</p>",
+        )
+        return jsonify({"status": "sent", "to": to, "from": RESEND_FROM, "has_key": bool(RESEND_API_KEY)})
+    except Exception as e:
+        return jsonify({"status": "failed", "error": str(e), "has_key": bool(RESEND_API_KEY), "from": RESEND_FROM})
 
 
 @app.route("/api/health", methods=["GET"])
