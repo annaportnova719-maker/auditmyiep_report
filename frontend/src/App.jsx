@@ -521,8 +521,35 @@ function AppInner() {
         setPhase(piId ? 'audit_error' : 'upload');
         return;
       }
-      setReport(data.report);
-      setPhase('report');
+
+      // Backend now returns a job_id immediately and runs the audit in the
+      // background — poll until done so there is no HTTP timeout, no matter
+      // how large the IEP is.
+      if (data.job_id) {
+        const poll = async () => {
+          try {
+            const statusRes = await fetch(`${API_BASE}/audit-status/${data.job_id}`);
+            const statusData = await statusRes.json();
+            if (statusData.status === 'done') {
+              setReport(statusData.report);
+              setPhase('report');
+            } else if (statusData.status === 'error') {
+              setErrorMsg(statusData.error || 'Something went wrong.');
+              setPhase(piId ? 'audit_error' : 'upload');
+            } else {
+              setTimeout(poll, 4000); // still pending — check again in 4s
+            }
+          } catch (err) {
+            setErrorMsg('Could not reach the audit server. Is app.py running?');
+            setPhase(piId ? 'audit_error' : 'upload');
+          }
+        };
+        setTimeout(poll, 4000); // give the audit a head start before first check
+      } else {
+        // Fallback for direct report in response (shouldn't happen)
+        setReport(data.report);
+        setPhase('report');
+      }
     } catch (err) {
       setErrorMsg('Could not reach the audit server. Is app.py running?');
       setPhase(piId ? 'audit_error' : 'upload');

@@ -46,6 +46,8 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.application import MIMEApplication
 
+import threading
+import uuid as _uuid_mod
 from flask import Flask, request, jsonify, Response, send_from_directory
 from flask_cors import CORS
 from dotenv import load_dotenv
@@ -82,6 +84,39 @@ except Exception:
         PdfReader = None
 
 client = anthropic.Anthropic()  # reads ANTHROPIC_API_KEY from the environment
+
+# ---------------------------------------------------------------------------
+# BACKGROUND JOB STORE — lets the audit run in a background thread so the
+# HTTP request returns immediately (no gunicorn timeout, no matter how big
+# the IEP is). The frontend polls /api/audit-status/<job_id> every few
+# seconds until the result is ready.
+# ---------------------------------------------------------------------------
+_jobs: dict = {}
+_jobs_lock = threading.Lock()
+
+def _run_audit_job(job_id: str, pdf_bytes: bytes, payment_intent_id: str) -> None:
+    """Runs in a daemon thread. Stores result in _jobs[job_id]."""
+    try:
+        report = run_overview_audit(pdf_bytes)
+
+        # Capture payment now that the audit succeeded
+        if PAYMENTS_ENABLED and payment_intent_id:
+            try:
+                intent = stripe.PaymentIntent.retrieve(payment_intent_id)
+                if getattr(intent, "status", None) == "requires_capture":
+                    stripe.PaymentIntent.capture(payment_intent_id)
+            except Exception as e:
+                print(f"[capture warning] could not capture {payment_intent_id}: {e}")
+            try:
+                _mark_payment_used(payment_intent_id)
+            except OSError:
+                pass
+
+        with _jobs_lock:
+            _jobs[job_id] = {"status": "done", "report": report}
+    except Exception as e:
+        with _jobs_lock:
+            _jobs[job_id] = {"status": "error", "error": str(e)}
 
 # --------------------------------------------------------------------------
 # PAYMENT (Stripe) — a parent pays once, and that single payment unlocks
@@ -869,36 +904,43 @@ def audit():
     if pay_error:
         return pay_error
 
-    # Run the audit FIRST. If it fails, we simply return the error and the
-    # card authorization is never captured — so the parent is not charged,
-    # and the held amount falls off on its own. (No report → no charge.)
-    try:
-        report = run_overview_audit(pdf_bytes)
-    except anthropic.APIError as e:
-        return jsonify({"error": f"Claude API error: {e}"}), 502
-    except RuntimeError as e:
-        return jsonify({"error": str(e)}), 502
+    # Start the audit in a background thread and return a job_id immediately.
+    # This means no HTTP timeout no matter how large the IEP — the frontend
+    # polls /api/audit-status/<job_id> until the result is ready.
+    # Payment capture happens inside the background thread, only on success.
+    job_id = str(_uuid_mod.uuid4())
+    with _jobs_lock:
+        _jobs[job_id] = {"status": "pending"}
 
-    # The audit succeeded — NOW capture the held payment (this is the moment
-    # the card is actually charged) and mark it spent so it can't be reused.
-    if PAYMENTS_ENABLED and payment_intent_id:
-        try:
-            intent = stripe.PaymentIntent.retrieve(payment_intent_id)
-            if getattr(intent, "status", None) == "requires_capture":
-                stripe.PaymentIntent.capture(payment_intent_id)
-        except Exception as e:
-            # Capture failed (rare). The parent already has their report, so
-            # we do NOT fail their request over it — this is our problem to
-            # reconcile in Stripe, never theirs.
-            print(f"[capture warning] could not capture {payment_intent_id}: {e}")
-        try:
-            _mark_payment_used(payment_intent_id)
-        except OSError:
-            pass  # bookkeeping best-effort; never fail a paid audit over it
+    thread = threading.Thread(
+        target=_run_audit_job,
+        args=(job_id, pdf_bytes, payment_intent_id),
+        daemon=True,
+    )
+    thread.start()
+    return jsonify({"job_id": job_id})
 
-    # Nothing about the IEP is saved here — report is only ever sent back to
-    # the browser that asked for it, then this server's memory of it is gone.
-    return jsonify({"report": report})
+
+@app.route("/api/audit-status/<job_id>", methods=["GET"])
+def audit_status(job_id):
+    """Polling endpoint — returns pending/done/error for a background audit job."""
+    with _jobs_lock:
+        job = _jobs.get(job_id)
+
+    if job is None:
+        return jsonify({"status": "not_found"}), 404
+
+    if job["status"] == "done":
+        with _jobs_lock:
+            _jobs.pop(job_id, None)  # free memory once result is read
+        return jsonify({"status": "done", "report": job["report"]})
+
+    if job["status"] == "error":
+        with _jobs_lock:
+            _jobs.pop(job_id, None)
+        return jsonify({"status": "error", "error": job.get("error", "Unknown error")}), 502
+
+    return jsonify({"status": "pending"})
 
 
 @app.route("/api/section-detail", methods=["POST"])
