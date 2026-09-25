@@ -1052,6 +1052,27 @@ def serve_react(path):
         return send_from_directory(FRONTEND_DIST, path)
     return send_from_directory(FRONTEND_DIST, 'index.html')
 
+@app.route("/api/test-email", methods=["GET"])
+def test_email():
+    """Temporary diagnostic endpoint."""
+    import smtplib, traceback
+    results = []
+    for kind, port in [("ssl", 465), ("starttls", 587)]:
+        try:
+            if kind == "ssl":
+                with smtplib.SMTP_SSL("smtp.zoho.com", port, timeout=15) as server:
+                    server.login(ZOHO_EMAIL, ZOHO_APP_PASSWORD)
+            else:
+                with smtplib.SMTP("smtp.zoho.com", port, timeout=15) as server:
+                    server.ehlo()
+                    server.starttls()
+                    server.login(ZOHO_EMAIL, ZOHO_APP_PASSWORD)
+            results.append({"port": port, "status": "connected"})
+        except Exception as e:
+            results.append({"port": port, "status": "failed", "error": str(e)})
+    return jsonify({"zoho_email": ZOHO_EMAIL, "has_password": bool(ZOHO_APP_PASSWORD), "results": results})
+
+
 @app.route("/api/health", methods=["GET"])
 def health():
     return jsonify({"status": "ok"})
