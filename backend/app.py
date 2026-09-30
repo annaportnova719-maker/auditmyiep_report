@@ -1063,21 +1063,6 @@ def serve_react(path):
         return send_from_directory(FRONTEND_DIST, path)
     return send_from_directory(FRONTEND_DIST, 'index.html')
 
-@app.route("/api/test-email", methods=["GET"])
-def test_email():
-    """Temporary diagnostic endpoint — sends a real test email via Resend."""
-    to = request.args.get("to", "help@auditmyiep.com")
-    try:
-        send_email(
-            to_email=to,
-            subject="AuditMyIEP test email",
-            html_body="<p>If you're reading this, Resend email is working. \u2705</p>",
-        )
-        return jsonify({"status": "sent", "to": to, "from": RESEND_FROM, "has_key": bool(RESEND_API_KEY)})
-    except Exception as e:
-        return jsonify({"status": "failed", "error": str(e), "has_key": bool(RESEND_API_KEY), "from": RESEND_FROM})
-
-
 @app.route("/api/health", methods=["GET"])
 def health():
     return jsonify({"status": "ok"})
