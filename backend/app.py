@@ -1077,11 +1077,17 @@ def report_pdf():
 # Serve React frontend in production
 FRONTEND_DIST = os.path.join(os.path.dirname(__file__), '..', 'frontend', 'dist')
 
+BACKEND_DIR = os.path.dirname(__file__)
+
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def serve_react(path):
     if path.startswith('api/'):
         return jsonify({"error": "Not found"}), 404
+    # Home page is the marketing landing page; the audit app lives at /audit
+    # (and every other non-file path falls through to the React app).
+    if path == '':
+        return send_from_directory(BACKEND_DIR, 'landing.html')
     full = os.path.join(FRONTEND_DIST, path)
     if path and os.path.exists(full):
         return send_from_directory(FRONTEND_DIST, path)

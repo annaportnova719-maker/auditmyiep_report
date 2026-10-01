@@ -1,0 +1,496 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AuditMyIEP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..600&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap">
+<style>
+  html, body { margin: 0; }
+  img { max-width: 100%; }
+
+  /* Layout: conversion landing — teal brand, warm amber CTA, serif display over humanist sans; product-preview hero, visual proof blocks. */
+  :root {
+    --bg: #FBFBF8;
+    --surface: #FFFFFF;
+    --surface-2: #EEF3F0;
+    --fg: #182925;
+    --muted: #55655E;
+    --accent: #BE7429;
+    --accent-2: #D98E3D;
+    --accent-soft: #F4E7D5;
+    --panel: #183029;
+    --panel-2: #21453B;
+    --panel-fg: #F6FAF7;
+    --panel-muted: #BFD3CB;
+    --panel-accent: #E6A860;
+    --good: #1E8A5B;
+    --good-bg: #E5F1EA;
+    --good-line: #BBDcc8;
+    --warn: #C07A1E;
+    --warn-bg: #F7ECD8;
+    --crit: #B7402F;
+    --crit-bg: #FAEBE8;
+    --crit-line: #E8C9C2;
+    --border: #DBE4DF;
+    --radius: 18px;
+    --shadow-sm: 0 2px 10px -4px rgba(24,41,37,0.25);
+    --shadow: 0 24px 60px -30px rgba(24,41,37,0.45);
+    --ff-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+    --ff-body: 'Plus Jakarta Sans', -apple-system, system-ui, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0E1C17; --surface: #142620; --surface-2: #1A3129; --fg: #ECF3EF; --muted: #A0B5AC;
+      --accent: #E6A860; --accent-2: #F0B974; --accent-soft: #2A2016;
+      --panel: #09140F; --panel-2: #16322A; --panel-fg: #F6FAF7; --panel-muted: #BFD3CB; --panel-accent: #E6A860;
+      --good: #5DBF90; --good-bg: #13291F; --good-line: #244A3A;
+      --warn: #E0A64E; --warn-bg: #2C2212; --crit: #E6978B; --crit-bg: #2B1814; --crit-line: #4A2922;
+      --border: #26392F; --shadow-sm: 0 2px 10px -4px rgba(0,0,0,0.5); --shadow: 0 24px 60px -30px rgba(0,0,0,0.65);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0E1C17; --surface: #142620; --surface-2: #1A3129; --fg: #ECF3EF; --muted: #A0B5AC;
+    --accent: #E6A860; --accent-2: #F0B974; --accent-soft: #2A2016;
+    --panel: #09140F; --panel-2: #16322A; --panel-fg: #F6FAF7; --panel-muted: #BFD3CB; --panel-accent: #E6A860;
+    --good: #5DBF90; --good-bg: #13291F; --good-line: #244A3A;
+    --warn: #E0A64E; --warn-bg: #2C2212; --crit: #E6978B; --crit-bg: #2B1814; --crit-line: #4A2922;
+    --border: #26392F; --shadow-sm: 0 2px 10px -4px rgba(0,0,0,0.5); --shadow: 0 24px 60px -30px rgba(0,0,0,0.65);
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  body { background: var(--bg); color: var(--fg); font-family: var(--ff-body); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  h1, h2, h3 { font-family: var(--ff-display); text-wrap: balance; line-height: 1.08; margin: 0; font-weight: 600; }
+  p { margin: 0; }
+  a { color: inherit; }
+  .ic { width: 22px; height: 22px; flex: none; stroke: currentColor; fill: none; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+
+  .wrap { max-width: 1120px; margin: 0 auto; padding-inline: 20px; }
+  section { padding-block: 80px; }
+
+  /* header */
+  .nav { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 30; background: color-mix(in srgb, var(--bg) 85%, transparent); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
+  .nav-inner { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 13px; }
+  .brand { display: flex; align-items: center; gap: 10px; font-family: var(--ff-display); font-weight: 600; font-size: 21px; color: var(--fg); text-decoration: none; letter-spacing: -0.01em; }
+  .brand .mark { width: 32px; height: 32px; border-radius: 10px; background: var(--panel); display: grid; place-items: center; color: var(--panel-accent); flex: none; }
+  .brand .mark .ic { width: 18px; height: 18px; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 9px; background: linear-gradient(180deg, var(--accent-2), var(--accent)); color: #1C130A; font-family: var(--ff-body); font-weight: 800; font-size: 16px; padding: 14px 24px; border-radius: 12px; text-decoration: none; border: none; cursor: pointer; box-shadow: var(--shadow-sm); transition: transform .15s ease, box-shadow .15s ease, filter .15s ease; }
+  .btn:hover { transform: translateY(-2px); box-shadow: var(--shadow); filter: brightness(1.04); }
+  .btn .ic { width: 18px; height: 18px; stroke-width: 2.4; }
+  .btn-sm { padding: 10px 17px; font-size: 15px; }
+  .btn-ghost { background: transparent; color: var(--fg); border: 1.5px solid var(--border); box-shadow: none; }
+  .btn-ghost:hover { box-shadow: none; border-color: var(--muted); }
+  .btn-green { background: linear-gradient(180deg, #3DA876, #2E8B63); color: #fff; box-shadow: var(--shadow-sm); }
+
+  /* hero */
+  .hero { padding-top: 60px; padding-bottom: 72px; }
+  .hero-grid { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 56px; align-items: center; }
+  .eyebrow { display: inline-flex; align-items: center; gap: 8px; font-weight: 800; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); background: var(--accent-soft); padding: 7px 14px; border-radius: 999px; }
+  .hero h1 { font-size: clamp(40px, 6vw, 66px); font-weight: 600; margin-top: 22px; letter-spacing: -0.02em; }
+  .hero .lede { font-size: clamp(18px, 2.2vw, 22px); color: var(--muted); margin-top: 22px; max-width: 46ch; }
+  .hero-cta { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; margin-top: 30px; }
+  .reassure { display: flex; align-items: flex-start; gap: 9px; font-size: 15px; color: var(--muted); margin-top: 24px; max-width: 52ch; }
+  .reassure .ic { width: 18px; height: 18px; color: var(--good); margin-top: 2px; }
+
+  /* hero product preview */
+  .preview { background: var(--surface); border: 1px solid var(--border); border-radius: 22px; box-shadow: var(--shadow); padding: 26px; }
+  .preview-top { display: flex; align-items: center; gap: 18px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
+  .ring { position: relative; width: 112px; height: 112px; flex: none; }
+  .ring svg { transform: rotate(-90deg); display: block; }
+  .ring .rtext { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .ring .rn { font-family: var(--ff-display); font-weight: 600; font-size: 34px; line-height: 1; }
+  .ring .rl { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 3px; }
+  .preview-top h3 { font-family: var(--ff-body); font-size: 17px; font-weight: 800; }
+  .preview-top p { font-size: 14px; color: var(--muted); margin-top: 3px; }
+  .rows { display: flex; flex-direction: column; gap: 14px; margin-top: 20px; }
+  .row { display: grid; grid-template-columns: 1fr auto; gap: 6px 12px; align-items: center; }
+  .row .rtitle { font-size: 15px; font-weight: 700; }
+  .pill { font-size: 12px; font-weight: 800; padding: 3px 10px; border-radius: 999px; letter-spacing: .3px; }
+  .pill.g { color: var(--good); background: var(--good-bg); }
+  .pill.w { color: var(--warn); background: var(--warn-bg); }
+  .pill.c { color: var(--crit); background: var(--crit-bg); }
+  .bar { grid-column: 1 / -1; height: 7px; border-radius: 999px; background: var(--surface-2); overflow: hidden; }
+  .bar > span { display: block; height: 100%; border-radius: 999px; }
+  .bar .g { background: var(--good); } .bar .w { background: var(--warn); } .bar .c { background: var(--crit); }
+
+  /* section heading */
+  .sec-head { max-width: 50ch; }
+  .sec-head.center { margin-inline: auto; text-align: center; }
+  .sec-head h2 { font-size: clamp(30px, 4vw, 42px); font-weight: 600; letter-spacing: -0.015em; }
+  .sec-head p { color: var(--muted); margin-top: 14px; font-size: 18px; }
+
+  /* problem */
+  .problem { background: var(--surface-2); border-block: 1px solid var(--border); }
+  .vague-row { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 30px; }
+  .chip { background: var(--surface); border: 1px solid var(--border); border-radius: 999px; padding: 10px 18px; font-size: 16px; font-weight: 600; color: var(--muted); font-style: italic; }
+
+  /* steps */
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; margin-top: 44px; }
+  .step { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 30px; position: relative; }
+  .step .sic { width: 48px; height: 48px; border-radius: 13px; background: var(--panel); color: var(--panel-accent); display: grid; place-items: center; }
+  .step .sic .ic { width: 24px; height: 24px; }
+  .step .num { position: absolute; top: 24px; right: 26px; font-family: var(--ff-display); font-weight: 600; font-size: 20px; color: var(--border); }
+  .step h3 { font-size: 22px; font-weight: 600; margin-top: 18px; font-family: var(--ff-display); }
+  .step p { color: var(--muted); margin-top: 10px; font-size: 16.5px; }
+
+  /* sample */
+  .sample { background: var(--panel); color: var(--panel-fg); }
+  .sample .sec-head h2 { color: var(--panel-fg); }
+  .sample .sec-head p { color: var(--panel-muted); }
+  .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 38px; }
+  .cmp { border-radius: var(--radius); padding: 28px; display: flex; flex-direction: column; gap: 12px; }
+  .cmp.weak { background: var(--crit-bg); border: 1px solid var(--crit-line); }
+  .cmp.strong { background: var(--good-bg); border: 1px solid var(--good-line); }
+  .cmp .tag { display: inline-flex; align-items: center; gap: 7px; font-weight: 800; font-size: 13px; letter-spacing: 1px; text-transform: uppercase; }
+  .cmp.weak .tag { color: var(--crit); } .cmp.strong .tag { color: var(--good); }
+  .cmp .tag .ic { width: 16px; height: 16px; stroke-width: 2.4; }
+  .cmp .quote { font-size: 19px; font-style: italic; color: var(--fg); line-height: 1.5; }
+  .cmp .why { font-size: 15.5px; color: var(--muted); }
+  .cmp .scoreline { font-size: 17px; font-weight: 800; margin-top: 2px; }
+  .cmp.weak .scoreline { color: var(--crit); } .cmp.strong .scoreline { color: var(--good); }
+
+  /* get */
+  .get-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 40px; }
+  .get { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 26px; }
+  .get .gic { width: 44px; height: 44px; border-radius: 12px; background: var(--accent-soft); color: var(--accent); display: grid; place-items: center; }
+  .get .gic .ic { width: 23px; height: 23px; }
+  .get h3 { font-size: 19px; font-weight: 700; font-family: var(--ff-body); margin-top: 16px; }
+  .get p { color: var(--muted); font-size: 16px; margin-top: 6px; }
+
+  /* value / comparison chart */
+  .value { background: var(--surface-2); border-block: 1px solid var(--border); }
+  .value-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 44px; align-items: center; }
+  .chartcard { background: var(--surface); border: 1px solid var(--border); border-radius: 22px; padding: 34px; box-shadow: var(--shadow-sm); }
+  .cbar { margin-top: 22px; }
+  .cbar:first-child { margin-top: 0; }
+  .cbar .ctop { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+  .cbar .cname { font-weight: 700; font-size: 16px; }
+  .cbar .cval { font-family: var(--ff-display); font-weight: 600; font-size: 22px; }
+  .cbar .ctrack { height: 40px; border-radius: 10px; background: var(--surface-2); overflow: hidden; }
+  .cbar .cfill { height: 100%; border-radius: 10px; display: flex; align-items: center; padding-left: 14px; color: #fff; font-weight: 800; font-size: 14px; white-space: nowrap; }
+  .cfill.adv { width: 100%; background: linear-gradient(90deg, #8a5a3a, var(--muted)); }
+  .cfill.you { width: 20%; min-width: 92px; background: linear-gradient(90deg, var(--accent-2), var(--accent)); color: #1C130A; }
+  .cnote { font-size: 13px; color: var(--muted); margin-top: 18px; }
+
+  /* privacy */
+  .privacy-card { display: flex; gap: 18px; align-items: flex-start; background: var(--surface); border: 1px solid var(--good-line); border-radius: var(--radius); padding: 30px; margin-top: 30px; box-shadow: var(--shadow-sm); }
+  .privacy-card .lock { width: 48px; height: 48px; border-radius: 13px; background: var(--good-bg); color: var(--good); display: grid; place-items: center; flex: none; }
+  .privacy-card .lock .ic { width: 24px; height: 24px; }
+  .privacy-card ul { margin: 0; padding-left: 20px; color: var(--muted); font-size: 16.5px; display: flex; flex-direction: column; gap: 8px; }
+
+  /* story */
+  .story-grid { display: grid; grid-template-columns: 320px 1fr; gap: 48px; align-items: center; }
+  .portrait { aspect-ratio: 1 / 1; max-width: 100%; border-radius: 22px; background: var(--surface-2); border: 1px dashed var(--border); display: grid; place-items: center; text-align: center; color: var(--muted); font-size: 15px; padding: 24px; }
+  .story h2 { font-size: clamp(28px, 3.6vw, 40px); font-weight: 600; margin-top: 14px; }
+  .story p { color: var(--muted); font-size: 18px; margin-top: 16px; }
+  .story .sig { color: var(--fg); font-weight: 700; margin-top: 16px; font-family: var(--ff-display); }
+
+  /* pricing */
+  .price-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 44px; max-width: 840px; margin-inline: auto; }
+  .tier { background: var(--surface); border: 1px solid var(--border); border-radius: 22px; padding: 36px; display: flex; flex-direction: column; position: relative; }
+  .tier.feature { border: 2px solid var(--accent); box-shadow: var(--shadow); }
+  .tier .flag { position: absolute; top: -13px; left: 50%; transform: translateX(-50%); background: var(--accent); color: #1C130A; font-weight: 800; font-size: 12px; letter-spacing: 1px; text-transform: uppercase; padding: 6px 14px; border-radius: 999px; }
+  .tier h3 { font-family: var(--ff-body); font-size: 15px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); }
+  .tier .amt { font-family: var(--ff-display); font-weight: 600; font-size: 60px; margin-top: 10px; letter-spacing: -0.02em; }
+  .tier .per { color: var(--muted); font-size: 16px; }
+  .tier .founder { color: var(--accent); font-weight: 800; font-size: 14px; margin-top: 10px; }
+  .tier ul { list-style: none; margin: 22px 0 26px; padding: 0; display: flex; flex-direction: column; gap: 11px; }
+  .tier li { display: flex; gap: 10px; font-size: 16px; align-items: flex-start; }
+  .tier li .ck { color: var(--good); flex: none; margin-top: 3px; }
+  .tier li .ck .ic { width: 17px; height: 17px; stroke-width: 2.6; }
+  .tier .btn { margin-top: auto; width: 100%; }
+  .price-note { max-width: 60ch; margin: 28px auto 0; text-align: center; color: var(--muted); font-size: 15.5px; }
+
+  /* faq */
+  .faq { max-width: 820px; margin-inline: auto; }
+  details { border-bottom: 1px solid var(--border); padding: 20px 2px; }
+  summary { cursor: pointer; font-weight: 700; font-size: 18.5px; list-style: none; display: flex; justify-content: space-between; gap: 16px; align-items: center; font-family: var(--ff-display); }
+  summary::-webkit-details-marker { display: none; }
+  summary::after { content: "+"; color: var(--accent); font-size: 26px; font-weight: 400; line-height: 1; }
+  details[open] summary::after { content: "\2013"; }
+  details p { color: var(--muted); font-size: 16.5px; margin-top: 12px; max-width: 72ch; }
+
+  /* final */
+  .final { background: var(--panel); color: var(--panel-fg); text-align: center; }
+  .final h2 { font-size: clamp(30px, 4.4vw, 48px); font-weight: 600; color: var(--panel-fg); max-width: 20ch; margin-inline: auto; letter-spacing: -0.015em; }
+  .final p { color: var(--panel-muted); font-size: 19px; margin-top: 18px; max-width: 50ch; margin-inline: auto; }
+  .final .btn { margin-top: 30px; }
+
+  /* footer */
+  footer { padding-block: 40px; text-align: center; color: var(--muted); font-size: 14.5px; }
+  footer .links { display: flex; flex-wrap: wrap; gap: 8px 18px; justify-content: center; margin-bottom: 14px; }
+  footer a { font-weight: 700; color: var(--accent); text-decoration: none; }
+  .disclaimer { max-width: 72ch; margin: 0 auto; }
+
+  /* motion */
+  @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+  .rise { animation: rise .6s cubic-bezier(.2,.7,.3,1) both; }
+  .d1 { animation-delay: .05s; } .d2 { animation-delay: .13s; } .d3 { animation-delay: .21s; } .d4 { animation-delay: .29s; }
+  @media (prefers-reduced-motion: reduce) { .rise { animation: none; } * { transition: none !important; } }
+
+  @media (max-width: 880px) {
+    .hero-grid { grid-template-columns: 1fr; gap: 40px; }
+    .steps, .get-grid { grid-template-columns: 1fr; }
+    .compare, .value-grid, .price-grid { grid-template-columns: 1fr; }
+    .story-grid { grid-template-columns: 1fr; gap: 26px; }
+    .portrait { max-width: 280px; }
+    section { padding-block: 60px; }
+  }
+</style>
+</head>
+<body>
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="#top"><span class="mark"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.3-2.9 7.5-7 9-4.1-1.5-7-4.7-7-9V6l7-3z"/><path d="M9 12l2 2 4-4"/></svg></span> AuditMyIEP</a>
+    <a class="btn btn-sm" href="/audit">Audit my IEP</a>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero wrap">
+    <div class="hero-grid">
+      <div>
+        <span class="eyebrow rise d1">For parents of kids with IEPs</span>
+        <h1 class="rise d2">Does your child's IEP hold up?</h1>
+        <p class="lede rise d3">Upload your child's IEP and get a plain-language report in minutes — every section scored, the weak spots flagged, and a clear strategy for your next meeting.</p>
+        <div class="hero-cta rise d3">
+          <a class="btn" href="/audit">Audit my IEP — $19 <svg class="ic" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg></a>
+          <a class="btn btn-ghost btn-sm" href="#how">See how it works</a>
+        </div>
+        <p class="reassure rise d4"><svg class="ic" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg> Your IEP is never saved to any system or AI platform, and never used to train AI — it's cleared the moment your report is ready.</p>
+      </div>
+      <div class="preview rise d4" aria-label="Example audit report preview">
+        <div class="preview-top">
+          <div class="ring">
+            <svg width="112" height="112" viewBox="0 0 112 112">
+              <circle cx="56" cy="56" r="50" fill="none" stroke="var(--surface-2)" stroke-width="11"/>
+              <circle cx="56" cy="56" r="50" fill="none" stroke="var(--good)" stroke-width="11" stroke-linecap="round" stroke-dasharray="314.16" stroke-dashoffset="88"/>
+            </svg>
+            <div class="rtext"><span class="rn">72</span><span class="rl">Overall</span></div>
+          </div>
+          <div>
+            <h3>Your IEP Audit Report</h3>
+            <p>12 sections reviewed &middot; example</p>
+          </div>
+        </div>
+        <div class="rows">
+          <div class="row"><span class="rtitle">Present Levels</span><span class="pill g">Strong</span><div class="bar"><span class="g" style="width:94%"></span></div></div>
+          <div class="row"><span class="rtitle">Annual Goals</span><span class="pill w">Needs work</span><div class="bar"><span class="w" style="width:48%"></span></div></div>
+          <div class="row"><span class="rtitle">Services</span><span class="pill c">Missing minutes</span><div class="bar"><span class="c" style="width:28%"></span></div></div>
+          <div class="row"><span class="rtitle">Accommodations</span><span class="pill g">Strong</span><div class="bar"><span class="g" style="width:88%"></span></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="problem">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2>The words are the whole game</h2>
+        <p>An IEP is a legal promise — but a promise only counts if it's specific. Schools often use soft language that sounds supportive and commits to nothing. When the words are vague, it's much harder to hold the school accountable for what your child was promised.</p>
+      </div>
+      <div class="vague-row">
+        <span class="chip">"support as needed"</span>
+        <span class="chip">"access to extra time"</span>
+        <span class="chip">"will be encouraged to"</span>
+        <span class="chip">"consult as appropriate"</span>
+        <span class="chip">"making progress"</span>
+        <span class="chip">"when the student self-advocates"</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="how" class="wrap">
+    <div class="sec-head">
+      <h2>How it works</h2>
+      <p>Three steps, about two minutes of your time.</p>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="sic"><svg class="ic" viewBox="0 0 24 24"><path d="M12 16V4"/><path d="M8 8l4-4 4 4"/><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg></div>
+        <span class="num">01</span>
+        <h3>Upload your IEP</h3>
+        <p>Drop in the PDF of your child's current IEP. That's all we need to get started.</p>
+      </div>
+      <div class="step">
+        <div class="sic"><svg class="ic" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></div>
+        <span class="num">02</span>
+        <h3>We audit every section</h3>
+        <p>Your IEP is checked against federal law (IDEA) and the Endrew&nbsp;F. standard — section by section, for both compliance and whether it's specific enough to enforce.</p>
+      </div>
+      <div class="step">
+        <div class="sic"><svg class="ic" viewBox="0 0 24 24"><path d="M14 3v5h5"/><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-5z"/><path d="M8 13h8M8 17h5"/></svg></div>
+        <span class="num">03</span>
+        <h3>Get your report</h3>
+        <p>A clear score for each section, the weak spots flagged in plain English, and a strategy with the questions to ask in the meeting.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="sample">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2>See the difference specifics make</h2>
+        <p>Here's the same reading goal, written two ways — and the score each one earns.</p>
+      </div>
+      <div class="compare">
+        <div class="cmp weak">
+          <span class="tag"><svg class="ic" viewBox="0 0 24 24"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9L2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg> Needs work</span>
+          <p class="quote">"Ethan will improve his reading and become a more confident reader."</p>
+          <p class="why">No baseline, no number, no date. "Improve" can't be proven or disproven.</p>
+          <p class="scoreline">Enforceability score: 20 / 100</p>
+        </div>
+        <div class="cmp strong">
+          <span class="tag"><svg class="ic" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg> Strong</span>
+          <p class="quote">"Given a 4th-grade passage, Ethan will read 90 correct words/minute (baseline: 52) on curriculum-based probes, across 3 sessions, by May 30, 2027."</p>
+          <p class="why">Target, baseline, method, and a date. Progress is provable.</p>
+          <p class="scoreline">Enforceability score: 95 / 100</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap">
+    <div class="sec-head">
+      <h2>What you get</h2>
+      <p>Everything you need to walk into the meeting with the confidence to advocate for your child's needs.</p>
+    </div>
+    <div class="get-grid">
+      <div class="get"><div class="gic"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3l2.9 5.9 6.1.9-4.5 4.4 1 6.1L12 17.8 6.5 20.3l1-6.1L3 9.8l6.1-.9z"/></svg></div><h3>A score for every section</h3><p>Present levels, goals, services, placement, and more — each one rated for compliance and enforceability.</p></div>
+      <div class="get"><div class="gic"><svg class="ic" viewBox="0 0 24 24"><path d="M4 21V4h11l1 2h4v9h-9l-1-2H4"/></svg></div><h3>Weak spots flagged</h3><p>Every place the wording would let the school off the hook, named in plain English.</p></div>
+      <div class="get"><div class="gic"><svg class="ic" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div><h3>A strategy for each section</h3><p>The questions to ask, and the reason behind each one, so you know not just what to say but why you're saying it.</p></div>
+      <div class="get"><div class="gic"><svg class="ic" viewBox="0 0 24 24"><path d="M9 18h6"/><path d="M10 21h4"/><path d="M12 3a6 6 0 0 0-4 10.5c.7.6 1 1 1 2.5h6c0-1.5.3-1.9 1-2.5A6 6 0 0 0 12 3z"/></svg></div><h3>The "why" behind it</h3><p>A plain-language look at what each section requires and why it matters — a deeper understanding of the process, not just a checklist.</p></div>
+      <div class="get"><div class="gic"><svg class="ic" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></div><h3>Ready-to-paste language</h3><p>Stronger wording you can hand the team to drop straight into the IEP.</p></div>
+      <div class="get"><div class="gic"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg></div><h3>Emailed to you</h3><p>Your full report arrives as a PDF you can keep, print, or bring to the meeting.</p></div>
+    </div>
+  </section>
+
+  <section class="value">
+    <div class="wrap">
+      <div class="value-grid">
+        <div>
+          <div class="sec-head">
+            <h2>A fraction of the cost</h2>
+            <p>A professional advocate is worth every penny — but most families can't start at $100+ an hour. AuditMyIEP gives you a serious head start for less than the cost of lunch.</p>
+          </div>
+        </div>
+        <div class="chartcard">
+          <div class="cbar">
+            <div class="ctop"><span class="cname">AuditMyIEP</span><span class="cval">$19</span></div>
+            <div class="ctrack"><div class="cfill you">one-time</div></div>
+          </div>
+          <div class="cbar">
+            <div class="ctop"><span class="cname">If you hired a private advocate</span><span class="cval">$99&ndash;$120<span style="font-size:14px;color:var(--muted)">/hr</span></span></div>
+            <div class="ctrack"><div class="cfill adv">per hour</div></div>
+          </div>
+          <p class="cnote">Shown to scale, for comparison. AuditMyIEP is a tool, not a private advocacy service — the audit is a starting point you can always take to an advocate or attorney.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap">
+    <div class="sec-head">
+      <h2>Your child's information is safe</h2>
+      <p>Built the way any parent would want their own child's records handled.</p>
+    </div>
+    <div class="privacy-card">
+      <div class="lock"><svg class="ic" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></div>
+      <ul>
+        <li>It is <strong>never saved to any system or AI platform</strong>, and never stored on a server or in a database.</li>
+        <li>It is <strong>never used to train AI</strong>.</li>
+        <li>It is read only to build your report, then <strong>cleared the moment your report is ready</strong>.</li>
+        <li><strong>Only you</strong> ever see your report.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="wrap story">
+    <div class="story-grid">
+      <div class="portrait">[ Add a warm photo of you &mdash; and Jonah, if you'd like ]</div>
+      <div>
+        <span class="eyebrow">Why I built this</span>
+        <h2>Hi, I'm Anna</h2>
+        <p>I'm a single mom of a 14-year-old son, Jonah, who's in middle school here in Colorado and has special needs. Much of what I know about advocating inside the special-education system, I learned fighting for him.</p>
+        <p>I'm also a local realtor of over 12 years, and I've spent more than 20 years helping people through some of the biggest decisions of their lives — in real estate, in finance, and in education. I hold a degree in business management, I've worked in finance, and I served as a student-services liaison at a Colorado university, guiding advisors and students through undergraduate and early-childhood-education programs. That work made me fluent in how the Department of Education operates.</p>
+        <p>I'm a parent and a professional who has spent my career on the front lines — guiding, teaching, and advocating for people. I'm not a lawyer or an attorney. AuditMyIEP is the resource I wish I'd had: a way to understand your child's IEP, know what the law requires, and walk into the meeting ready to advocate.</p>
+        <p class="sig">— Anna</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="pricing wrap">
+    <div class="sec-head center">
+      <h2>Simple, honest pricing</h2>
+      <p>No subscription. Pay per audit, only when you need one.</p>
+    </div>
+    <div class="price-grid">
+      <div class="tier">
+        <h3>The Audit</h3>
+        <div class="amt">$19</div>
+        <div class="per">one-time, per IEP</div>
+        <div class="founder">Founder's price — going up to $37 soon.</div>
+        <ul>
+          <li><span class="ck"><svg class="ic" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span> Full written report, every section scored</li>
+          <li><span class="ck"><svg class="ic" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span> Weak spots flagged in plain English</li>
+          <li><span class="ck"><svg class="ic" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span> A strategy with the questions to ask</li>
+          <li><span class="ck"><svg class="ic" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span> Ready-to-paste IEP language</li>
+          <li><span class="ck"><svg class="ic" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span> Emailed to you as a PDF</li>
+        </ul>
+        <a class="btn" href="/audit">Start my audit</a>
+      </div>
+      <div class="tier feature">
+        <span class="flag">Best value</span>
+        <h3>Audit + Strategy Session</h3>
+        <div class="amt">$47</div>
+        <div class="per">audit + a 1:1 with Anna</div>
+        <div class="founder">Book your session within 14 days.</div>
+        <ul>
+          <li><span class="ck"><svg class="ic" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span> Everything in The Audit</li>
+          <li><span class="ck"><svg class="ic" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span> A 30-minute 1:1 call with me</li>
+          <li><span class="ck"><svg class="ic" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span> We review your report together</li>
+          <li><span class="ck"><svg class="ic" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span> A game plan for your meeting</li>
+        </ul>
+        <a class="btn btn-green" href="/audit">Get the audit + session</a>
+      </div>
+    </div>
+    <p class="price-note">A private advocate typically charges $99&ndash;$120 an hour. Both options give you a serious head start for a fraction of that.</p>
+  </section>
+
+  <section class="wrap">
+    <div class="sec-head center"><h2>Questions parents ask</h2></div>
+    <div class="faq">
+      <details open><summary>Is this legal advice?</summary><p>No. AuditMyIEP is an educational tool to help you understand your child's IEP and prepare to advocate. It doesn't replace a special-education attorney or advocate. For legal advice about your specific situation, talk to a licensed attorney in your state.</p></details>
+      <details><summary>Is my child's information safe?</summary><p>Yes. Your IEP is never saved to any system or AI platform and never used to train AI. It's read only to build your report, then cleared the moment the report is ready, and only you ever see it. Full details are in our Privacy Policy.</p></details>
+      <details><summary>What if my IEP is long?</summary><p>That's fine — IEPs are often 30 to 60 pages. The audit handles the whole document; longer files just take a little longer to process.</p></details>
+      <details><summary>How accurate is it?</summary><p>The report is generated by AI checking your IEP against federal standards. It's a strong starting point for understanding and advocating — not a guarantee of any outcome. Always review it against your own knowledge of your child.</p></details>
+      <details><summary>Do you store my payment information?</summary><p>No. Payments are handled by Stripe. We never see or store your card details — only a confirmation that the payment went through.</p></details>
+    </div>
+  </section>
+
+  <section class="final">
+    <div class="wrap">
+      <h2>You don't have to walk into that room alone.</h2>
+      <p>You don't have to be a lawyer to advocate for your child. You just need to understand the IEP, and how to make sure it reflects what your child needs.</p>
+      <a class="btn" href="/audit">Audit my IEP — $19 <svg class="ic" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg></a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="links">
+      <a href="/terms">Terms of Service</a>
+      <a href="/privacy">Privacy Policy</a>
+      <a href="mailto:help@auditmyiep.com">help@auditmyiep.com</a>
+    </div>
+    <p class="disclaimer">AuditMyIEP is an educational tool, not legal advice, and does not replace a special-education attorney or advocate. &copy; <span id="yr"></span> AuditMyIEP.</p>
+  </div>
+</footer>
+<script>document.getElementById('yr').textContent = new Date().getFullYear();</script>
+</body>
+</html>
