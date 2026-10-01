@@ -94,7 +94,7 @@ client = anthropic.Anthropic()  # reads ANTHROPIC_API_KEY from the environment
 _jobs: dict = {}
 _jobs_lock = threading.Lock()
 
-def _run_audit_job(job_id: str, pdf_bytes: bytes, payment_intent_id: str) -> None:
+def _run_audit_job(job_id: str, pdf_bytes: bytes, payment_intent_id: str, email: str = "") -> None:
     """Runs in a daemon thread. Stores result in _jobs[job_id]."""
     try:
         report = run_overview_audit(pdf_bytes)
@@ -111,6 +111,15 @@ def _run_audit_job(job_id: str, pdf_bytes: bytes, payment_intent_id: str) -> Non
                 _mark_payment_used(payment_intent_id)
             except OSError:
                 pass
+
+        # Save the purchaser's email to the marketing list. A completed
+        # purchase creates a business relationship, so this is permitted
+        # under CAN-SPAM; marketing emails still carry an unsubscribe link.
+        if email and EMAIL_RE.match(email):
+            try:
+                append_marketing_email(email)
+            except OSError:
+                pass  # never fail a paid audit over the mailing list
 
         with _jobs_lock:
             _jobs[job_id] = {"status": "done", "report": report}
@@ -804,13 +813,25 @@ def send_email(to_email: str, subject: str, html_body: str, attachment=None) -> 
 
 def append_marketing_email(email: str) -> None:
     """Appends ONE row — email + date — to a local CSV. Nothing else about
-    the parent or their child is ever written here. Creates the file with
-    a header the first time it's needed."""
+    the parent or their child is ever written here. Skips an email already
+    on the list so one buyer is never added twice. Creates the file with a
+    header the first time it's needed."""
+    email = email.strip()
+    if not email:
+        return
     is_new = not os.path.exists(MARKETING_LIST_PATH)
+    if not is_new:
+        try:
+            with open(MARKETING_LIST_PATH, newline="") as f:
+                for row in csv.reader(f):
+                    if row and row[0].strip().lower() == email.lower():
+                        return  # already on the list
+        except OSError:
+            pass
     with open(MARKETING_LIST_PATH, "a", newline="") as f:
         writer = csv.writer(f)
         if is_new:
-            writer.writerow(["email", "opted_in_at_utc"])
+            writer.writerow(["email", "collected_at_utc"])
         writer.writerow([email, datetime.now(timezone.utc).isoformat()])
 
 
@@ -915,17 +936,20 @@ def audit():
     if pay_error:
         return pay_error
 
+    email = (request.form.get("email", "") or "").strip()
+
     # Start the audit in a background thread and return a job_id immediately.
     # This means no HTTP timeout no matter how large the IEP — the frontend
     # polls /api/audit-status/<job_id> until the result is ready.
-    # Payment capture happens inside the background thread, only on success.
+    # Payment capture (and saving the purchaser email) happens inside the
+    # background thread, only on success.
     job_id = str(_uuid_mod.uuid4())
     with _jobs_lock:
         _jobs[job_id] = {"status": "pending"}
 
     thread = threading.Thread(
         target=_run_audit_job,
-        args=(job_id, pdf_bytes, payment_intent_id),
+        args=(job_id, pdf_bytes, payment_intent_id, email),
         daemon=True,
     )
     thread.start()

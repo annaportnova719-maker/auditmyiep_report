@@ -514,6 +514,7 @@ function AppInner() {
       const formData = new FormData();
       formData.append('iep_pdf', file);
       if (piId) formData.append('payment_intent_id', piId);
+      if (email) formData.append('email', email);
       const res = await fetch(API_URL, { method: 'POST', body: formData });
       const data = await res.json();
       if (!res.ok) {
