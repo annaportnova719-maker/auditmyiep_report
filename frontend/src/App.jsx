@@ -176,7 +176,7 @@ function UploadScreen({ onSubmit, errorMsg, paymentsEnabled, amountCents, config
               <button
                 type="button"
                 onClick={() => inputRef.current?.click()}
-                className="mt-3 inline-flex items-center rounded-xl bg-primary px-6 py-3 text-base font-800 text-primary-foreground shadow-brand hover:opacity-90 hover:scale-[1.02] transition-all"
+                className="mt-3 inline-flex items-center rounded-xl bg-gold px-6 py-3 text-base font-800 text-[#1C130A] shadow-brand hover:opacity-90 hover:scale-[1.02] transition-all"
               >
                 {t('audit.upload')}
               </button>
@@ -243,7 +243,7 @@ function UploadScreen({ onSubmit, errorMsg, paymentsEnabled, amountCents, config
           type="button"
           disabled={!file || !consented || !emailLooksValid || !configLoaded}
           onClick={() => onSubmit(file, email)}
-          className="mt-5 w-full rounded-xl bg-gold px-5 py-3.5 text-base font-800 font-heading text-primary shadow-brand hover:opacity-90 hover:scale-[1.01] transition-all disabled:bg-muted disabled:text-muted-foreground disabled:shadow-none disabled:cursor-not-allowed disabled:hover:scale-100"
+          className="mt-5 w-full rounded-xl bg-[#2E8B63] px-5 py-3.5 text-base font-800 font-heading text-white shadow-brand hover:bg-[#3DA876] transition-all disabled:bg-muted disabled:text-muted-foreground disabled:shadow-none disabled:cursor-not-allowed disabled:hover:bg-muted"
         >
           {paymentsEnabled ? `Continue to payment — ${priceLabel}` : t('audit.run')}
         </button>
