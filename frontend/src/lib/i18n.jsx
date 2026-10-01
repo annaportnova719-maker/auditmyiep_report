@@ -10,8 +10,8 @@ const translations = {
   'audit.running': { en: 'Auditing your IEP… full reports can take several minutes because of how thorough this audit is. Please stay on this page.', es: 'Auditando su IEP… los informes completos pueden tardar varios minutos porque la auditoría es muy detallada. Por favor, no cierre esta página.' },
   'audit.print': { en: 'Download / print PDF', es: 'Descargar / imprimir PDF' },
   'audit.privacy': {
-    en: 'Private by design. Your IEP is never stored, logged, or kept — it’s read only to build this report, then it’s gone.',
-    es: 'Privado por diseño. Su IEP nunca se almacena, registra ni conserva: solo se lee para crear este informe y luego desaparece.',
+    en: 'Private by design. Your IEP is analyzed by secure AI and is never stored, never used to train AI, and deleted the moment your report is ready. Only you see it.',
+    es: 'Privado por diseño. Su IEP se analiza con IA segura y nunca se almacena, nunca se usa para entrenar IA y se elimina en cuanto su informe está listo. Solo usted lo ve.',
   },
   'audit.consent': {
     en: 'I’m the parent or legal guardian of this child (or authorized to share their records). I understand IEPs can hold sensitive medical, psychological, behavioral, and disciplinary details, and I consent to my document being read by a secure third-party AI to generate this report. AuditMyIEP is an educational tool, not legal advice.',
