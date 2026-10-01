@@ -4,39 +4,39 @@
 
 @layer base {
   :root {
-    --background: 100 22% 96%;
-    --foreground: 172 35% 10%;
+    --background: 60 20% 98%;
+    --foreground: 166 26% 13%;
     --card: 0 0% 100%;
-    --card-foreground: 172 35% 10%;
-    --primary: 175 70% 21%;
+    --card-foreground: 166 26% 13%;
+    --primary: 163 33% 16%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 100 20% 94%;
-    --secondary-foreground: 172 35% 10%;
-    --muted: 100 16% 94%;
-    --muted-foreground: 172 12% 38%;
-    --accent: 32 75% 45%;
+    --secondary: 146 16% 94%;
+    --secondary-foreground: 166 26% 13%;
+    --muted: 146 16% 94%;
+    --muted-foreground: 154 9% 37%;
+    --accent: 30 65% 45%;
     --accent-foreground: 0 0% 100%;
-    --destructive: 4 60% 46%;
+    --destructive: 8 59% 45%;
     --destructive-foreground: 0 0% 98%;
-    --border: 100 15% 87%;
-    --input: 100 15% 87%;
-    --ring: 175 70% 21%;
+    --border: 147 14% 88%;
+    --input: 147 14% 88%;
+    --ring: 163 33% 16%;
     --radius: 0.85rem;
 
-    --brand: 175 70% 21%;
-    --brand-soft: 172 42% 93%;
-    --gold: 32 75% 45%;
-    --gold-soft: 38 78% 93%;
-    --good: 152 58% 27%;
+    --brand: 163 33% 16%;
+    --brand-soft: 150 30% 94%;
+    --gold: 30 65% 45%;
+    --gold-soft: 35 58% 90%;
+    --good: 153 56% 31%;
     --good-bg: 150 42% 93%;
-    --warn: 30 78% 40%;
+    --warn: 34 73% 44%;
     --warn-bg: 36 82% 92%;
-    --crit: 4 60% 46%;
+    --crit: 8 59% 45%;
     --crit-bg: 6 62% 94%;
 
-    --font-heading: 'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif;
-    --font-body: 'Public Sans', ui-sans-serif, system-ui, sans-serif;
-    --font-display: 'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif;
+    --font-heading: 'Fraunces', Georgia, 'Times New Roman', serif;
+    --font-body: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+    --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
   }
 
   .dark {
@@ -79,10 +79,6 @@
   body {
     @apply text-foreground font-body antialiased;
     background-color: hsl(var(--background));
-    background-image:
-      radial-gradient(ellipse 900px 500px at 12% -8%, hsl(var(--brand) / 0.07), transparent 60%),
-      radial-gradient(ellipse 800px 500px at 100% 0%, hsl(var(--gold) / 0.06), transparent 55%);
-    background-attachment: fixed;
   }
 
   h1, h2, h3, h4 {

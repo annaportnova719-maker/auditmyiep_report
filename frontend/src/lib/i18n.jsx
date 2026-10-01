@@ -4,7 +4,7 @@ import React, { createContext, useContext, useState, useCallback } from 'react'
 // simpler app actually renders). English/Spanish both still work — just
 // pass ?lang=es or wire up a toggle later.
 const translations = {
-  'hero.title': { en: "Know what your child's IEP actually promises.", es: 'Sepa lo que el IEP de su hijo/a realmente promete.' },
+  'hero.title': { en: "Know what your child's IEP promises.", es: 'Sepa lo que el IEP de su hijo/a realmente promete.' },
   'audit.upload': { en: 'Upload IEP PDF', es: 'Subir IEP en PDF' },
   'audit.run': { en: 'Run audit', es: 'Ejecutar auditoría' },
   'audit.running': { en: 'Auditing your IEP… full reports can take several minutes because of how thorough this audit is. Please stay on this page.', es: 'Auditando su IEP… los informes completos pueden tardar varios minutos porque la auditoría es muy detallada. Por favor, no cierre esta página.' },
