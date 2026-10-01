@@ -269,7 +269,7 @@ export default function AuditReportView({ report, iepFile, title, meta, initialE
       {/* Mast */}
       <div className="rounded-3xl bg-card border border-border p-6 sm:p-8 shadow-brand">
         <div className="flex items-center gap-2 text-primary">
-          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary text-gold">
             <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4">
               <path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z" stroke="currentColor" strokeWidth="1.5" />
               <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />

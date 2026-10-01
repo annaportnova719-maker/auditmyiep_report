@@ -2,10 +2,10 @@
 // index.css, just as hex values for use in inline SVG/style props.
 
 const RANGES = [
-  { min: 85, fill: '#178a52', text: '#136b40' }, // rich green
-  { min: 65, fill: '#d99a2b', text: '#a3721c' }, // gold/amber
-  { min: 45, fill: '#e0793f', text: '#b5551f' }, // warm orange
-  { min: 0,  fill: '#c33f36', text: '#9c2f28' }, // brick red
+  { min: 85, fill: '#1E8A5B', text: '#166B45' }, // brand green
+  { min: 65, fill: '#C07A1E', text: '#8F5A14' }, // brand gold/amber
+  { min: 45, fill: '#C9622C', text: '#9C4A20' }, // warm orange
+  { min: 0,  fill: '#B7402F', text: '#8E2F25' }, // brand red
 ]
 
 function pick(score) {
