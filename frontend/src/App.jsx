@@ -3,6 +3,7 @@ import { loadStripe } from '@stripe/stripe-js';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { LanguageProvider, useI18n } from '@/lib/i18n';
 import AuditReportView from '@/components/audit/AuditReportView';
+import { TermsPage, PrivacyPage, SiteFooter } from '@/LegalPages';
 
 // Catches any crash anywhere below it and shows the actual error ON the
 // page — bright red, plain text — instead of the screen just going blank.
@@ -635,21 +636,30 @@ function AppInner() {
   }
 
   return (
-    <UploadScreen
-      onSubmit={handleUploadSubmit}
-      errorMsg={errorMsg}
-      paymentsEnabled={paymentsEnabled}
-      amountCents={amountCents}
-      configLoaded={stripeCfg !== null}
-    />
+    <>
+      <UploadScreen
+        onSubmit={handleUploadSubmit}
+        errorMsg={errorMsg}
+        paymentsEnabled={paymentsEnabled}
+        amountCents={amountCents}
+        configLoaded={stripeCfg !== null}
+      />
+      <div className="mx-auto max-w-xl px-4 pb-10">
+        <SiteFooter />
+      </div>
+    </>
   );
 }
 
 export default function App() {
+  const path = typeof window !== 'undefined' ? window.location.pathname : '/';
+  let page = <AppInner />;
+  if (path === '/terms' || path === '/terms/') page = <TermsPage />;
+  else if (path === '/privacy' || path === '/privacy/') page = <PrivacyPage />;
   return (
     <ErrorBoundary>
       <LanguageProvider>
-        <AppInner />
+        {page}
       </LanguageProvider>
     </ErrorBoundary>
   );
