@@ -193,7 +193,8 @@ export function PrivacyPage() {
       <div>
         <H2>Children's information</H2>
         <p className="mt-2">
-          Your IEP may contain information about a child. We process it solely to generate your
+          Your IEP may contain sensitive information about a child — including medical,
+          psychological, behavioral, and disciplinary details. We process it solely to generate your
           report and delete it immediately afterward. We do not sell or share it, and it is never
           used for advertising or training.
         </p>

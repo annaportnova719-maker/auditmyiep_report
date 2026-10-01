@@ -14,8 +14,8 @@ const translations = {
     es: 'Privado por diseño. Su IEP se analiza con IA segura y nunca se almacena, nunca se usa para entrenar IA y se elimina en cuanto su informe está listo. Solo usted lo ve.',
   },
   'audit.consent': {
-    en: 'I’m the parent or legal guardian of this child (or authorized to share their records). I understand IEPs can hold sensitive medical, psychological, behavioral, and disciplinary details, and I consent to my document being read by a secure third-party AI to generate this report. I understand AuditMyIEP will email my report and may send occasional updates, and that I can unsubscribe at any time. AuditMyIEP is an educational tool, not legal advice.',
-    es: 'Soy el padre, madre o tutor/a legal de este niño/a (o estoy autorizado/a para compartir sus documentos). Entiendo que los IEP pueden contener información médica, psicológica, conductual y disciplinaria sensible, y doy mi consentimiento para que mi documento sea leído por una IA externa segura para generar este informe. Entiendo que AuditMyIEP enviará mi informe y podrá enviar actualizaciones ocasionales, y que puedo cancelar la suscripción en cualquier momento. AuditMyIEP es una herramienta educativa, no asesoría legal.',
+    en: 'Email me my report and occasional updates (unsubscribe anytime). I agree to the Terms of Service and Privacy Policy.',
+    es: 'Envíenme mi informe y actualizaciones ocasionales (puedo cancelar en cualquier momento). Acepto los Términos de Servicio y la Política de Privacidad.',
   },
   'audit.sub.compliance': { en: 'Compliance', es: 'Cumplimiento' },
   'audit.sub.enforce': { en: 'Enforceable', es: 'Exigible' },
