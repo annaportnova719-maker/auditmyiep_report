@@ -87,6 +87,7 @@ function UploadScreen({ onSubmit, errorMsg, paymentsEnabled, amountCents, config
   const [fileError, setFileError] = useState('');
   const [consented, setConsented] = useState(false);
   const [email, setEmail] = useState('');
+  const [betaCode, setBetaCode] = useState('');
   const emailLooksValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   const inputRef = useRef(null);
   const priceLabel = formatPrice(amountCents);
@@ -239,13 +240,24 @@ function UploadScreen({ onSubmit, errorMsg, paymentsEnabled, amountCents, config
           <span>{t('audit.consent')}</span>
         </label>
 
+        <details className="mt-4">
+          <summary className="cursor-pointer text-xs font-700 text-muted-foreground hover:text-foreground">Have a beta code?</summary>
+          <input
+            type="text"
+            value={betaCode}
+            onChange={(e) => setBetaCode(e.target.value)}
+            placeholder="Enter beta code"
+            className="mt-2 w-full rounded-xl border-2 border-border bg-card px-4 py-3 text-base font-500 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-2 focus:ring-ring"
+          />
+        </details>
+
         <button
           type="button"
           disabled={!file || !consented || !emailLooksValid || !configLoaded}
-          onClick={() => onSubmit(file, email)}
+          onClick={() => onSubmit(file, email, betaCode.trim())}
           className="mt-5 w-full rounded-xl bg-[#3DA876] px-5 py-3.5 text-base font-800 font-heading text-[#08140F] shadow-brand hover:bg-[#53CE9B] transition-all disabled:bg-muted disabled:text-muted-foreground disabled:shadow-none disabled:cursor-not-allowed disabled:hover:bg-muted"
         >
-          {paymentsEnabled ? `Continue to payment — ${priceLabel}` : t('audit.run')}
+          {betaCode.trim() ? 'Run my free audit' : (paymentsEnabled ? `Continue to payment — ${priceLabel}` : t('audit.run'))}
         </button>
 
         <p className="mt-3 text-center text-xs leading-relaxed text-muted-foreground">
@@ -481,10 +493,15 @@ function AppInner() {
 
   // Called from the upload screen. In free mode it runs the audit straight
   // away; in paid mode it opens a PaymentIntent and moves to the card form.
-  async function handleUploadSubmit(file, email) {
+  async function handleUploadSubmit(file, email, betaCode = '') {
     setErrorMsg('');
     setIepFile(file);
     setParentEmail(email || '');
+
+    if (betaCode) {
+      runAudit(file, email, '', betaCode);
+      return;
+    }
 
     if (!paymentsEnabled) {
       runAudit(file, email, '');
@@ -510,7 +527,7 @@ function AppInner() {
     }
   }
 
-  async function runAudit(file, email, piId) {
+  async function runAudit(file, email, piId, betaCode = '') {
     setErrorMsg('');
     setPhase('auditing');
     try {
@@ -518,6 +535,7 @@ function AppInner() {
       formData.append('iep_pdf', file);
       if (piId) formData.append('payment_intent_id', piId);
       if (email) formData.append('email', email);
+      if (betaCode) formData.append('beta_code', betaCode);
       const res = await fetch(API_URL, { method: 'POST', body: formData });
       const data = await res.json();
       if (!res.ok) {

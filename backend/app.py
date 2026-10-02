@@ -95,7 +95,7 @@ client = anthropic.Anthropic()  # reads ANTHROPIC_API_KEY from the environment
 _jobs: dict = {}
 _jobs_lock = threading.Lock()
 
-def _run_audit_job(job_id: str, pdf_bytes: bytes, payment_intent_id: str, email: str = "") -> None:
+def _run_audit_job(job_id: str, pdf_bytes: bytes, payment_intent_id: str, email: str = "", is_beta: bool = False) -> None:
     """Runs in a daemon thread. Stores result in _jobs[job_id]."""
     try:
         report = run_overview_audit(pdf_bytes)
@@ -121,6 +121,12 @@ def _run_audit_job(job_id: str, pdf_bytes: bytes, payment_intent_id: str, email:
                 append_marketing_email(email)
             except OSError:
                 pass  # never fail a paid audit over the mailing list
+
+        if is_beta:
+            try:
+                _record_beta_use()
+            except OSError:
+                pass
 
         with _jobs_lock:
             _jobs[job_id] = {"status": "done", "report": report}
@@ -155,6 +161,39 @@ STRIPE_PUBLISHABLE_KEY = os.environ.get("STRIPE_PUBLISHABLE_KEY")
 AUDIT_PRICE_CENTS = int(os.environ.get("AUDIT_PRICE_CENTS", "1900"))  # $19.00
 PAYMENTS_ENABLED = bool(STRIPE_SECRET_KEY and STRIPE_PUBLISHABLE_KEY)
 USED_PAYMENTS_PATH = os.path.join(os.path.dirname(__file__), "used_payments.csv")
+
+# BETA ACCESS — a private code lets a tester run ONE audit free (no payment),
+# capped at BETA_MAX total uses so it can't be abused. Set BETA_CODE in the
+# environment to turn it on; leave it unset and the free path simply doesn't
+# exist. The counter file is best-effort (may reset on redeploy).
+BETA_CODE = (os.environ.get("BETA_CODE") or "").strip()
+BETA_MAX = int(os.environ.get("BETA_MAX", "5"))
+BETA_USES_PATH = os.path.join(os.path.dirname(__file__), "beta_uses.csv")
+
+
+def _beta_used_count() -> int:
+    try:
+        with open(BETA_USES_PATH) as fh:
+            return sum(1 for line in fh if line.strip())
+    except OSError:
+        return 0
+
+
+def _record_beta_use() -> None:
+    try:
+        with open(BETA_USES_PATH, "a") as fh:
+            fh.write("1\n")
+    except OSError:
+        pass
+
+
+def _beta_ok(code: str) -> bool:
+    """True if this is a valid, non-exhausted beta code (one free audit)."""
+    if not BETA_CODE:
+        return False
+    if (code or "").strip() != BETA_CODE:
+        return False
+    return _beta_used_count() < BETA_MAX
 
 if STRIPE_SECRET_KEY:
     stripe.api_key = STRIPE_SECRET_KEY
@@ -1137,9 +1176,13 @@ def audit():
     # Payment gate — must have a real, unused, paid PaymentIntent (skipped
     # entirely in FREE mode when Stripe keys aren't configured).
     payment_intent_id = request.form.get("payment_intent_id", "")
-    pay_error = _verify_paid_or_error(payment_intent_id)
-    if pay_error:
-        return pay_error
+    is_beta = _beta_ok(request.form.get("beta_code", ""))
+    if is_beta:
+        payment_intent_id = ""  # free beta audit: no payment, no capture
+    else:
+        pay_error = _verify_paid_or_error(payment_intent_id)
+        if pay_error:
+            return pay_error
 
     email = (request.form.get("email", "") or "").strip()
 
@@ -1154,7 +1197,7 @@ def audit():
 
     thread = threading.Thread(
         target=_run_audit_job,
-        args=(job_id, pdf_bytes, payment_intent_id, email),
+        args=(job_id, pdf_bytes, payment_intent_id, email, is_beta),
         daemon=True,
     )
     thread.start()
