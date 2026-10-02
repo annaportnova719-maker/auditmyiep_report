@@ -63,6 +63,7 @@ from reportlab.platypus import (
     SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle,
     KeepTogether, PageBreak, ListFlowable, ListItem,
 )
+from reportlab.graphics.shapes import Drawing, Rect
 
 load_dotenv()
 
@@ -614,6 +615,36 @@ def _grade_hex(grade: str) -> str:
     return "#a1352a"  # Weak / Missing
 
 
+def _score_color_hex(score) -> str:
+    try:
+        s = float(score)
+    except (TypeError, ValueError):
+        s = 0.0
+    if s >= 85:
+        return "#1f7a4c"
+    if s >= 65:
+        return "#a15c14"
+    if s >= 45:
+        return "#c9622c"
+    return "#a1352a"
+
+
+def _score_bar(score, width, height=7):
+    """A thin rounded progress bar. Prints fine in black & white because the
+    fill LENGTH conveys the score even without the color."""
+    try:
+        s = max(0.0, min(100.0, float(score)))
+    except (TypeError, ValueError):
+        s = 0.0
+    d = Drawing(width, height)
+    d.add(Rect(0, 0, width, height, rx=height / 2, ry=height / 2,
+               fillColor=colors.HexColor("#e6e9e7"), strokeColor=None))
+    fill_w = max(height, s / 100.0 * width)
+    d.add(Rect(0, 0, fill_w, height, rx=height / 2, ry=height / 2,
+               fillColor=colors.HexColor(_score_color_hex(s)), strokeColor=None))
+    return d
+
+
 def _pdf_styles():
     base = getSampleStyleSheet()
     return {
@@ -626,6 +657,7 @@ def _pdf_styles():
         "roseLabel": ParagraphStyle("RoseLabelX", parent=base["BodyText"], fontName="Helvetica-Bold", fontSize=13, leading=16, textColor=ROSE_TEXT, spaceAfter=3),
         "brandLabel": ParagraphStyle("BrandLabelX", parent=base["BodyText"], fontName="Helvetica-Bold", fontSize=13, leading=16, textColor=TEAL, spaceAfter=3),
         "small_bold": ParagraphStyle("SmallBoldX", parent=base["BodyText"], fontSize=9.5, leading=13),
+        "tilenum": ParagraphStyle("TileNumX", parent=base["BodyText"], fontName="Helvetica-Bold", fontSize=15, leading=17),
     }
 
 
@@ -660,11 +692,55 @@ def build_report_pdf(report: dict, section_details: dict) -> bytes:
     story = []
 
     # ---- Cover: overall score, summary, strengths, weak points ----
+    ov = report.get("overall_score")
     story.append(Paragraph("AuditMyIEP — Your IEP Audit Report", styles["title"]))
-    story.append(Paragraph(f"Overall score: <b>{_esc(report.get('overall_score'))}/100</b> — {_esc(report.get('verdict'))}", styles["body"]))
-    story.append(Spacer(1, 10))
-    story.append(Paragraph(_esc(report.get("summary")), styles["body"]))
+    story.append(Paragraph(f'Overall score: <b><font color="{_score_color_hex(ov)}">{_esc(ov)}/100</font></b> — {_esc(report.get("verdict"))}', styles["body"]))
+    story.append(Spacer(1, 5))
+    story.append(_score_bar(ov, CONTENT_WIDTH, 9))
     story.append(Spacer(1, 12))
+
+    _comp = report.get("compliance_score")
+    _enf = report.get("enforceability_score")
+    _half = (CONTENT_WIDTH - 0.3 * inch) / 2
+    _subtbl = Table([[
+        [Paragraph(f'<b>Compliance</b> &nbsp; <font color="{_score_color_hex(_comp)}">{_esc(_comp)}/100</font>', styles["small_bold"]), Spacer(1, 3), _score_bar(_comp, _half, 7)],
+        [Paragraph(f'<b>Enforceability</b> &nbsp; <font color="{_score_color_hex(_enf)}">{_esc(_enf)}/100</font>', styles["small_bold"]), Spacer(1, 3), _score_bar(_enf, _half, 7)],
+    ]], colWidths=[_half + 0.3 * inch, _half])
+    _subtbl.setStyle(TableStyle([
+        ("LEFTPADDING", (0, 0), (0, 0), 0), ("RIGHTPADDING", (0, 0), (0, 0), 0.3 * inch),
+        ("LEFTPADDING", (1, 0), (1, 0), 0), ("RIGHTPADDING", (1, 0), (1, 0), 0),
+        ("TOPPADDING", (0, 0), (-1, -1), 0), ("BOTTOMPADDING", (0, 0), (-1, -1), 0),
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+    ]))
+    story.append(_subtbl)
+    story.append(Spacer(1, 14))
+
+    story.append(Paragraph(_esc(report.get("summary")), styles["body"]))
+    story.append(Spacer(1, 14))
+
+    _cover_sections = report.get("sections") or []
+    if _cover_sections:
+        story.append(Paragraph("Every section at a glance", styles["h3"]))
+        story.append(Spacer(1, 5))
+        _rows = []
+        for _sec in _cover_sections:
+            _sc = _sec.get("section_score")
+            _rows.append([
+                Paragraph(_esc(_sec.get("section_name")), styles["body"]),
+                Paragraph(f'<font color="{_grade_hex(_sec.get("grade") or "Needs work")}"><b>{_esc(_sec.get("grade"))}</b></font>', styles["small_bold"]),
+                Paragraph(f'<b>{_esc(_sc)}</b>', styles["small_bold"]),
+                _score_bar(_sc, 1.7 * inch, 7),
+            ])
+        _sctbl = Table(_rows, colWidths=[CONTENT_WIDTH - 3.2 * inch, 1.0 * inch, 0.5 * inch, 1.7 * inch])
+        _sctbl.setStyle(TableStyle([
+            ("LINEBELOW", (0, 0), (-1, -2), 0.4, colors.HexColor("#e2e6e4")),
+            ("TOPPADDING", (0, 0), (-1, -1), 5), ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+            ("LEFTPADDING", (0, 0), (0, -1), 0),
+            ("ALIGN", (2, 0), (2, -1), "RIGHT"),
+            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        ]))
+        story.append(_sctbl)
+        story.append(Spacer(1, 16))
     story.append(Paragraph("Genuinely strong", styles["h3"]))
     story.append(Paragraph(_esc(report.get("strengths")), styles["body"]))
     story.append(Spacer(1, 12))
@@ -690,14 +766,37 @@ def build_report_pdf(report: dict, section_details: dict) -> bytes:
         grade = section.get("grade") or "Needs work"
         gcolor = _grade_hex(grade)
 
+        story.append(Paragraph(_esc(section.get("section_name")), styles["h2"]))
         story.append(Paragraph(
-            f'<font color="{gcolor}"><b>{_esc(grade)}</b></font> &nbsp;&middot;&nbsp; {_esc(section.get("section_score"))}/100',
-            styles["small_bold"],
+            f'<font color="{gcolor}"><b>{_esc(grade)}</b></font> &nbsp;&middot;&nbsp; begins p. {_esc(section.get("page_number"))}',
+            styles["muted"],
         ))
-        story.append(Paragraph(
-            f'"{_esc(section.get("section_name"))}" — begins p. {_esc(section.get("page_number"))}',
-            styles["h2"],
-        ))
+        story.append(Spacer(1, 7))
+        _third = (CONTENT_WIDTH - 0.5 * inch) / 3
+
+        def _sec_tile(_lbl, _val):
+            return [
+                Paragraph(f"<b>{_lbl}</b>", styles["small_bold"]),
+                Spacer(1, 1),
+                Paragraph(f'<font color="{_score_color_hex(_val)}">{_esc(_val)}</font><font size=8 color="#888888">/100</font>', styles["tilenum"]),
+                Spacer(1, 3),
+                _score_bar(_val, _third, 7),
+            ]
+
+        _tiletbl = Table([[
+            _sec_tile("Section score", section.get("section_score")),
+            _sec_tile("Compliance", section.get("compliance_score")),
+            _sec_tile("Enforceability", section.get("enforceability_score")),
+        ]], colWidths=[_third + 0.25 * inch, _third + 0.25 * inch, _third])
+        _tiletbl.setStyle(TableStyle([
+            ("LEFTPADDING", (0, 0), (0, 0), 0),
+            ("LEFTPADDING", (1, 0), (-1, 0), 0.25 * inch),
+            ("RIGHTPADDING", (0, 0), (-1, -1), 0),
+            ("TOPPADDING", (0, 0), (-1, -1), 0), ("BOTTOMPADDING", (0, 0), (-1, -1), 0),
+            ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ]))
+        story.append(_tiletbl)
+        story.append(Spacer(1, 12))
         story.append(Paragraph(f"<b>What we found:</b> {_esc(section.get('what_we_found'))}", styles["body"]))
         story.append(Spacer(1, 6))
         story.append(_box([Paragraph(f"<b>Your move:</b> {_esc(section.get('your_move'))}", styles["body"])], GOLD_BG, GOLD_BORDER))
