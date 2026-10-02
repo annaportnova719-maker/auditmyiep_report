@@ -206,7 +206,7 @@ export default function SectionCard({ section, detailState, onExpand }) {
       {/* Understand it & how to advocate — ALWAYS shown, no click required.
           Pink/rose background (reusing the app's existing --crit palette)
           so a parent can't scroll past it without noticing it's there. */}
-      <div className="drawer mt-4 rounded-2xl border-2 border-crit/30 bg-crit-bg/60 p-4 sm:p-5">
+      <div className="drawer mt-4 rounded-2xl border-2 border-crit/40 bg-card p-4 sm:p-5">
         <div className="flex items-center gap-2 text-[17px] font-800 uppercase tracking-wide text-crit">
           <BookOpen className="h-4 w-4" />
           {t('report.drawer')}

@@ -70,7 +70,7 @@ const AUDIT_STEPS = [
 function Logo() {
   return (
     <div className="flex items-center gap-2 text-primary">
-      <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-gold shadow-brand">
+      <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#0B1814] text-gold shadow-brand">
         <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4">
           <path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z" stroke="currentColor" strokeWidth="1.5" />
           <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
@@ -125,7 +125,7 @@ function UploadScreen({ onSubmit, errorMsg, paymentsEnabled, amountCents, config
 
         {/* Step 1 label so the flow reads as clear steps. */}
         <div className="mt-6 flex items-center gap-2 text-sm font-800 text-primary">
-          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs">1</span>
+          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gold text-[#0E1C17] text-xs">1</span>
           Upload your child's IEP (PDF)
         </div>
 
@@ -214,7 +214,7 @@ function UploadScreen({ onSubmit, errorMsg, paymentsEnabled, amountCents, config
         {/* Step 2 — email, in a bright gold box so nobody scrolls past it. */}
         <div className="mt-5 rounded-2xl border-2 border-gold bg-gold-soft/60 p-4 sm:p-5">
           <div className="flex items-center gap-2 text-sm font-800 text-foreground">
-            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gold text-primary text-xs">2</span>
+            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gold text-[#0E1C17] text-xs">2</span>
             Where should we email your report?
           </div>
           <input
@@ -243,7 +243,7 @@ function UploadScreen({ onSubmit, errorMsg, paymentsEnabled, amountCents, config
           type="button"
           disabled={!file || !consented || !emailLooksValid || !configLoaded}
           onClick={() => onSubmit(file, email)}
-          className="mt-5 w-full rounded-xl bg-[#2E8B63] px-5 py-3.5 text-base font-800 font-heading text-white shadow-brand hover:bg-[#3DA876] transition-all disabled:bg-muted disabled:text-muted-foreground disabled:shadow-none disabled:cursor-not-allowed disabled:hover:bg-muted"
+          className="mt-5 w-full rounded-xl bg-[#3DA876] px-5 py-3.5 text-base font-800 font-heading text-[#08140F] shadow-brand hover:bg-[#53CE9B] transition-all disabled:bg-muted disabled:text-muted-foreground disabled:shadow-none disabled:cursor-not-allowed disabled:hover:bg-muted"
         >
           {paymentsEnabled ? `Continue to payment — ${priceLabel}` : t('audit.run')}
         </button>
@@ -355,14 +355,16 @@ function CheckoutForm({ clientSecret, amountCents, fileName, onPaid, onBack }) {
     }
   }
 
+  const isDarkTheme = typeof document !== 'undefined'
+    && document.documentElement.classList.contains('dark');
   const cardStyle = {
     style: {
       base: {
         fontSize: '16px',
-        color: '#16261f',
-        '::placeholder': { color: '#9aa5a0' },
+        color: isDarkTheme ? '#ECF3EF' : '#16261f',
+        '::placeholder': { color: isDarkTheme ? '#7E938B' : '#9aa5a0' },
       },
-      invalid: { color: '#a1352a' },
+      invalid: { color: isDarkTheme ? '#F0A69E' : '#a1352a' },
     },
   };
 
@@ -393,7 +395,7 @@ function CheckoutForm({ clientSecret, amountCents, fileName, onPaid, onBack }) {
       <button
         type="submit"
         disabled={!canPay}
-        className="mt-5 w-full rounded-xl bg-gold px-5 py-3.5 text-base font-800 font-heading text-primary shadow-brand hover:opacity-90 hover:scale-[1.01] transition-all disabled:bg-muted disabled:text-muted-foreground disabled:shadow-none disabled:cursor-not-allowed disabled:hover:scale-100"
+        className="mt-5 w-full rounded-xl bg-gold px-5 py-3.5 text-base font-800 font-heading text-[#1C130A] shadow-brand hover:opacity-90 hover:scale-[1.01] transition-all disabled:bg-muted disabled:text-muted-foreground disabled:shadow-none disabled:cursor-not-allowed disabled:hover:scale-100"
       >
         {submitting ? 'Processing…' : `Pay ${priceLabel} & run my audit`}
       </button>
@@ -594,7 +596,7 @@ function AppInner() {
           <button
             type="button"
             onClick={() => runAudit(iepFile, parentEmail, paymentIntentId)}
-            className="mt-5 w-full rounded-xl bg-gold px-5 py-3.5 text-base font-800 font-heading text-primary shadow-brand hover:opacity-90 transition-all"
+            className="mt-5 w-full rounded-xl bg-gold px-5 py-3.5 text-base font-800 font-heading text-[#1C130A] shadow-brand hover:opacity-90 transition-all"
           >
             Try the audit again — no new charge
           </button>

@@ -63,7 +63,7 @@
     --brand: 170 55% 45%;
     --brand-soft: 160 30% 16%;
     --gold: 37 70% 55%;
-    --gold-soft: 35 40% 18%;
+    --gold-soft: 160 24% 13%;  /* clean dark green highlight (was muddy brown) */
     --good: 150 50% 50%;
     --good-bg: 150 30% 16%;
     --warn: 42 80% 55%;

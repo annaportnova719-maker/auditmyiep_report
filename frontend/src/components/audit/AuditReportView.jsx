@@ -269,7 +269,7 @@ export default function AuditReportView({ report, iepFile, title, meta, initialE
       {/* Mast */}
       <div className="rounded-3xl bg-card border border-border p-6 sm:p-8 shadow-brand">
         <div className="flex items-center gap-2 text-primary">
-          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary text-gold">
+          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#0B1814] text-gold">
             <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4">
               <path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z" stroke="currentColor" strokeWidth="1.5" />
               <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
@@ -306,7 +306,7 @@ export default function AuditReportView({ report, iepFile, title, meta, initialE
           nothing. */}
       <div className="no-print mt-6 rounded-2xl border-2 border-gold bg-gold-soft p-5 sm:p-6">
         <div className="flex items-start gap-3">
-          <span className="mt-0.5 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-primary text-gold">
+          <span className="mt-0.5 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-gold text-[#0E1C17]">
             <Mail className="h-5 w-5" />
           </span>
           <div className="min-w-0">
@@ -369,7 +369,7 @@ export default function AuditReportView({ report, iepFile, title, meta, initialE
           <div className="flex gap-2 overflow-x-auto pb-2 lg:flex-col lg:overflow-visible lg:pb-0 lg:sticky lg:top-4">
             <button
               onClick={() => goToTab('overview')}
-              className={`flex-shrink-0 rounded-xl px-4 py-2.5 text-left text-sm font-700 transition ${activeTab === 'overview' ? 'bg-primary text-primary-foreground shadow-brand' : 'bg-card border border-border text-foreground hover:bg-muted'}`}
+              className={`flex-shrink-0 rounded-xl px-4 py-2.5 text-left text-sm font-700 transition ${activeTab === 'overview' ? 'bg-gold text-[#0E1C17] shadow-brand' : 'bg-card border border-border text-foreground hover:bg-muted'}`}
             >
               Overview
             </button>
@@ -377,7 +377,7 @@ export default function AuditReportView({ report, iepFile, title, meta, initialE
               <button
                 key={i}
                 onClick={() => goToTab(i)}
-                className={`flex flex-shrink-0 items-center gap-2 rounded-xl px-4 py-2.5 text-left text-sm font-600 transition ${activeTab === i ? 'bg-primary text-primary-foreground shadow-brand' : 'bg-card border border-border text-foreground hover:bg-muted'}`}
+                className={`flex flex-shrink-0 items-center gap-2 rounded-xl px-4 py-2.5 text-left text-sm font-600 transition ${activeTab === i ? 'bg-gold text-[#0E1C17] shadow-brand' : 'bg-card border border-border text-foreground hover:bg-muted'}`}
               >
                 <span className="h-2 w-2 flex-shrink-0 rounded-full" style={{ background: activeTab === i ? 'currentColor' : dotColor(s.grade) }} />
                 <span className="truncate max-w-[11rem]">{s.section_name}</span>
