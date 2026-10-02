@@ -322,7 +322,7 @@ export default function AuditReportView({ report, iepFile, title, meta, initialE
               <>
                 <p className="text-base font-800 font-heading text-foreground">✓ Check your inbox — your full report is on its way</p>
                 <p className="mt-1.5 text-sm leading-relaxed text-foreground/85">
-                  We've emailed your complete PDF report to <span className="font-700">{emailAddress}</span>. Check your inbox (and your spam or promotions folder, just in case). Didn't get it? Email <a href="mailto:help@auditmyiep.com" className="font-700 text-primary underline">help@auditmyiep.com</a> and we'll resend it.
+                  We've emailed your complete PDF report to <span className="font-700">{emailAddress}</span>. Check your inbox — and your spam or promotions folder, just in case. <span className="font-700">Don't see it? Download it here before you leave</span> — this page is the only other copy. Questions? <a href="mailto:help@auditmyiep.com" className="font-700 text-primary underline">help@auditmyiep.com</a>.
                 </p>
               </>
             )}
@@ -330,7 +330,7 @@ export default function AuditReportView({ report, iepFile, title, meta, initialE
               <>
                 <p className="text-base font-800 font-heading text-foreground">We couldn't email your report</p>
                 <p className="mt-1.5 text-sm leading-relaxed text-foreground/85">
-                  Something went wrong sending it to <span className="font-700">{emailAddress}</span>. Download it below so you don't lose it, then email <a href="mailto:help@auditmyiep.com" className="font-700 text-primary underline">help@auditmyiep.com</a> and we'll sort it out.
+                  Something went wrong sending it to <span className="font-700">{emailAddress}</span>. <span className="font-700">Download it below now so you don't lose it</span> — this page is the only copy. If you're stuck, email <a href="mailto:help@auditmyiep.com" className="font-700 text-primary underline">help@auditmyiep.com</a>.
                 </p>
               </>
             )}
@@ -338,7 +338,7 @@ export default function AuditReportView({ report, iepFile, title, meta, initialE
               <>
                 <p className="text-base font-800 font-heading text-foreground">Check your inbox for your full PDF report</p>
                 <p className="mt-1.5 text-sm leading-relaxed text-foreground/85">
-                  Your complete report is emailed to you as a PDF. Didn't get it? Check your spam or promotions folder, or email <a href="mailto:help@auditmyiep.com" className="font-700 text-primary underline">help@auditmyiep.com</a> and we'll resend it.
+                  Your complete report is emailed to you as a PDF. Don't see it? Check your spam or promotions folder, or <span className="font-700">download it right here before you leave</span> — this page is the only other copy. Questions? <a href="mailto:help@auditmyiep.com" className="font-700 text-primary underline">help@auditmyiep.com</a>.
                 </p>
               </>
             )}
@@ -351,7 +351,7 @@ export default function AuditReportView({ report, iepFile, title, meta, initialE
                 className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-700 text-foreground hover:bg-muted transition disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 <Download className="h-4 w-4" />
-                {awaitingDownload ? 'Preparing your PDF…' : 'Prefer to save it yourself? Download the PDF'}
+                {awaitingDownload ? 'Preparing your PDF…' : 'Download your PDF report'}
               </button>
               {downloadError && (
                 <p className="w-full text-sm font-600 text-crit">{downloadError}</p>
