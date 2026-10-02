@@ -389,6 +389,27 @@ export default function AuditReportView({ report, iepFile, title, meta, initialE
         <div className="min-w-0 flex-1 space-y-6">
           {/* Overview panel */}
           <div className={`tab-panel space-y-6 ${activeTab === 'overview' ? '' : 'hidden'}`}>
+            {/* Section scorecard dashboard — every section at a glance, click to open */}
+            <div className="rounded-3xl bg-card border border-border p-6 sm:p-8 shadow-brand">
+              <h2 className="font-heading text-xl font-800">Every section at a glance</h2>
+              <p className="mt-1 text-sm text-muted-foreground">Tap any section to open its full breakdown. Red and amber are where your meeting time is best spent.</p>
+              <div className="mt-5 flex flex-col gap-3">
+                {sections.map((s, i) => (
+                  <button key={i} onClick={() => goToTab(i)} className="group w-full text-left">
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="text-sm font-700 text-foreground group-hover:underline">{s.section_name}</span>
+                      <span className="flex items-center gap-2.5 flex-shrink-0">
+                        <span className="text-xs font-800" style={{ color: colorFor(s.section_score) }}>{s.grade}</span>
+                        <span className="tnum text-sm font-800" style={{ color: colorFor(s.section_score) }}>{s.section_score ?? '—'}</span>
+                      </span>
+                    </div>
+                    <div className="mt-1.5 h-2.5 w-full rounded-full bg-muted overflow-hidden">
+                      <div className="h-full rounded-full transition-all duration-700" style={{ width: `${Math.max(0, Math.min(100, s.section_score || 0))}%`, background: colorFor(s.section_score) }} />
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
             <div className="rounded-3xl bg-card border border-border p-6 sm:p-8 shadow-brand">
               <h2 className="font-heading text-2xl font-700">{t('report.headline')}</h2>
               <p className="mt-3 text-sm leading-relaxed text-foreground/85">

@@ -255,6 +255,8 @@ For the "if_no_detail_yet" field on any section graded Weak, Needs work, or Miss
 
 This is the FAST OVERVIEW pass, and SPEED MATTERS: keep every field tight. what_we_found is 1-2 sentences, not a paragraph. your_move is one sentence. legal_basis is one sentence. Do NOT write the deeper plain-language explanation, the falls-short reasoning, the three-question script, or model IEP language here — those are generated separately, one section at a time, only when a parent asks to see them.
 
+For EVERY section, also set compliance_score and enforceability_score (0-100): compliance = does the section contain the legal elements it must; enforceability = from the words alone, could the parent point to a specific sentence and prove a promise was broken. section_score blends the two. A section can be compliant on paper yet weak on enforceability (vague wording) — show that split honestly.
+
 Call the `record_audit_overview` tool exactly once with your complete findings for every section."""
 
 
@@ -298,13 +300,16 @@ OVERVIEW_TOOL = {
                 "items": {
                     "type": "object",
                     "required": [
-                        "grade", "section_score", "section_name", "page_number",
+                        "grade", "section_score", "compliance_score", "enforceability_score",
+                        "section_name", "page_number",
                         "what_we_found", "your_move", "legal_basis", "citation",
                         "if_no_detail_yet",
                     ],
                     "properties": {
                         "grade": {"type": "string", "enum": ["Strong", "Needs work", "Weak", "Missing"]},
-                        "section_score": {"type": "number", "description": "0-100 for this section"},
+                        "section_score": {"type": "number", "description": "0-100 overall for this section (blend of compliance + enforceability)"},
+                        "compliance_score": {"type": "number", "description": "0-100: does THIS section meet the legal elements it must contain?"},
+                        "enforceability_score": {"type": "number", "description": "0-100: from the words alone, could a parent prove a broken promise in THIS section?"},
                         "section_name": {"type": "string", "description": "Full section name from the IEP form"},
                         "page_number": {"type": "string", "description": "Page where the section begins, as a string"},
                         "what_we_found": {"type": "string", "description": "1-2 short sentences of findings. NOT a long paragraph — be concise."},

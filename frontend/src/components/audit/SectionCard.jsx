@@ -13,6 +13,32 @@ function gradeLabel(grade) {
   return grade || 'Needs work';
 }
 
+function barColor(score) {
+  const s = Number(score) || 0;
+  if (s >= 75) return 'var(--good)';
+  if (s >= 50) return 'var(--warn)';
+  return 'var(--crit)';
+}
+
+// A compact dashboard stat tile: label, big number, and a mini score bar, so
+// each section opens with its key numbers at a glance before the detail.
+function StatTile({ label, value, big }) {
+  const has = value === 0 || Boolean(value);
+  const v = has ? Math.max(0, Math.min(100, Number(value))) : null;
+  const c = barColor(v == null ? 0 : v);
+  return (
+    <div className="rounded-xl border border-border bg-background/60 p-3">
+      <div className="text-[11px] font-800 uppercase tracking-wide text-muted-foreground">{label}</div>
+      <div className={`mt-1 font-heading font-800 leading-none tnum ${big ? 'text-3xl' : 'text-2xl'}`} style={{ color: c }}>
+        {v == null ? '—' : v}{v != null && <span className="text-sm font-700 text-muted-foreground">/100</span>}
+      </div>
+      <div className="mt-2 h-1.5 w-full rounded-full bg-muted overflow-hidden">
+        <div className="h-full rounded-full transition-all duration-700" style={{ width: (v == null ? 0 : v) + '%', background: c }} />
+      </div>
+    </div>
+  );
+}
+
 function BlockHead({ icon, label }) {
   return (
     <div className="flex items-center gap-2 text-[17px] font-800 uppercase tracking-wide text-primary">
@@ -164,21 +190,27 @@ export default function SectionCard({ section, detailState, onExpand }) {
 
   return (
     <div className="card rounded-2xl border border-border bg-card p-5 sm:p-6 shadow-brand">
-      <div className="flex flex-wrap items-center gap-2">
-        <span className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-700 ${style.pill}`}>
+      <div className="flex items-start justify-between gap-3 flex-wrap">
+        <div className="min-w-0">
+          <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+            <MapPin className="h-4 w-4 flex-shrink-0 text-primary" />
+            <span>{beginsLabel} {section.page_number || '—'}</span>
+          </div>
+          <h2 className="mt-1 font-heading text-2xl font-800 leading-tight">{section.section_name}</h2>
+        </div>
+        <span className={`inline-flex flex-shrink-0 items-center rounded-full border px-3 py-1.5 text-sm font-800 ${style.pill}`}>
           {gradeLabel(section.grade)}
         </span>
-        <span className="inline-flex items-center rounded-full bg-muted px-3 py-1 text-xs font-600 text-muted-foreground tnum">
-          {section.section_score ?? '—'}/100
-        </span>
       </div>
 
-      <div className="mt-3 flex items-start gap-2 text-[17px] font-800 text-foreground">
-        <MapPin className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
-        <span>"{section.section_name}" · {beginsLabel} {section.page_number || '—'}</span>
+      {/* Dashboard tiles — the section’s numbers at a glance. */}
+      <div className="mt-4 grid grid-cols-3 gap-2.5 sm:gap-3">
+        <StatTile label="Section score" value={section.section_score} big />
+        <StatTile label="Compliance" value={section.compliance_score} />
+        <StatTile label="Enforceability" value={section.enforceability_score} />
       </div>
 
-      <p className="mt-3 text-[15px] leading-relaxed text-foreground/85">
+      <p className="mt-4 text-[15px] leading-relaxed text-foreground/85">
         <b>{t('report.whatFound')}:</b> {section.what_we_found}
       </p>
 
