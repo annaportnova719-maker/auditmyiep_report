@@ -298,65 +298,66 @@ export default function AuditReportView({ report, iepFile, title, meta, initialE
         </div>
       </div>
 
-      {/* Save-it-now — bold, not fine print. This report lives only in this
-          browser tab: no account, no server copy, nothing saved anywhere. */}
+      {/* Delivery confirmation. The full PDF report auto-emails once on load
+          (see autoSendTriggeredRef above), so this box confirms it's on the
+          way instead of asking the parent to send it themselves. A quiet,
+          free Download backup stays available in case the email never lands —
+          re-sending or downloading never re-runs the audit, so it costs
+          nothing. */}
       <div className="no-print mt-6 rounded-2xl border-2 border-gold bg-gold-soft p-5 sm:p-6">
-        <p className="text-base font-800 font-heading text-foreground">⚠ Save this report before you leave this page</p>
-        <p className="mt-1.5 text-sm leading-relaxed text-foreground/85">
-          Nothing here is saved anywhere — not on this computer, not on a server. Close this tab without downloading or emailing it, and it's gone; getting it back means running the audit again.
-        </p>
+        <div className="flex items-start gap-3">
+          <span className="mt-0.5 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-primary text-gold">
+            <Mail className="h-5 w-5" />
+          </span>
+          <div className="min-w-0">
+            {(awaitingEmail || emailStatus === 'sending') && (
+              <>
+                <p className="text-base font-800 font-heading text-foreground">Sending your full report…</p>
+                <p className="mt-1.5 text-sm leading-relaxed text-foreground/85">
+                  Your complete PDF report is on its way to <span className="font-700">{emailAddress}</span>. This takes just a moment.
+                </p>
+              </>
+            )}
+            {emailStatus === 'sent' && (
+              <>
+                <p className="text-base font-800 font-heading text-foreground">✓ Check your inbox — your full report is on its way</p>
+                <p className="mt-1.5 text-sm leading-relaxed text-foreground/85">
+                  We've emailed your complete PDF report to <span className="font-700">{emailAddress}</span>. Check your inbox (and your spam or promotions folder, just in case). Didn't get it? Email <a href="mailto:help@auditmyiep.com" className="font-700 text-primary underline">help@auditmyiep.com</a> and we'll resend it.
+                </p>
+              </>
+            )}
+            {emailStatus === 'error' && (
+              <>
+                <p className="text-base font-800 font-heading text-foreground">We couldn't email your report</p>
+                <p className="mt-1.5 text-sm leading-relaxed text-foreground/85">
+                  Something went wrong sending it to <span className="font-700">{emailAddress}</span>. Download it below so you don't lose it, then email <a href="mailto:help@auditmyiep.com" className="font-700 text-primary underline">help@auditmyiep.com</a> and we'll sort it out.
+                </p>
+              </>
+            )}
+            {emailStatus === 'idle' && !awaitingEmail && (
+              <>
+                <p className="text-base font-800 font-heading text-foreground">Check your inbox for your full PDF report</p>
+                <p className="mt-1.5 text-sm leading-relaxed text-foreground/85">
+                  Your complete report is emailed to you as a PDF. Didn't get it? Check your spam or promotions folder, or email <a href="mailto:help@auditmyiep.com" className="font-700 text-primary underline">help@auditmyiep.com</a> and we'll resend it.
+                </p>
+              </>
+            )}
 
-        <div className="mt-4 flex flex-wrap items-center gap-3">
-          <button
-            onClick={handleDownload}
-            disabled={awaitingDownload}
-            className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-700 text-primary-foreground hover:opacity-90 transition disabled:opacity-60 disabled:cursor-not-allowed"
-          >
-            <Download className="h-4 w-4" />
-            {awaitingDownload ? 'Loading every section…' : 'Download PDF report'}
-          </button>
-          {downloadError && (
-            <p className="w-full text-sm font-600 text-crit">{downloadError}</p>
-          )}
-        </div>
-
-        <div className="mt-4 rounded-xl border border-border bg-card p-4">
-          <div className="flex items-center gap-2 text-sm font-700 text-foreground">
-            <Mail className="h-4 w-4 text-primary" />
-            Or email yourself a copy
+            {/* Quiet, free backup — never re-runs the audit, so no extra charge. */}
+            <div className="mt-4 flex flex-wrap items-center gap-3">
+              <button
+                onClick={handleDownload}
+                disabled={awaitingDownload}
+                className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-700 text-foreground hover:bg-muted transition disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                <Download className="h-4 w-4" />
+                {awaitingDownload ? 'Preparing your PDF…' : 'Prefer to save it yourself? Download the PDF'}
+              </button>
+              {downloadError && (
+                <p className="w-full text-sm font-600 text-crit">{downloadError}</p>
+              )}
+            </div>
           </div>
-          <div className="mt-3 flex flex-col gap-2 sm:flex-row">
-            <input
-              type="email"
-              value={emailAddress}
-              onChange={(e) => { setEmailAddress(e.target.value); setEmailStatus('idle'); }}
-              placeholder="you@example.com"
-              className="flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-            />
-            <button
-              type="button"
-              onClick={handleEmailClick}
-              disabled={!emailAddress || awaitingEmail || emailStatus === 'sending'}
-              className="inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-card px-4 py-2 text-sm font-700 text-foreground hover:bg-muted transition disabled:opacity-60 disabled:cursor-not-allowed"
-            >
-              {awaitingEmail ? 'Preparing…' : emailStatus === 'sending' ? 'Sending…' : 'Email me a copy'}
-            </button>
-          </div>
-          <label className="mt-2 flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
-            <input
-              type="checkbox"
-              className="mt-0.5 h-3.5 w-3.5 flex-shrink-0"
-              checked={marketingOptIn}
-              onChange={(e) => setMarketingOptIn(e.target.checked)}
-            />
-            <span>Also send me occasional updates and tips from AuditMyIEP (optional — unrelated to your report).</span>
-          </label>
-          {emailStatus === 'sent' && (
-            <p className="mt-2 text-sm font-600 text-good">Sent — check your inbox.</p>
-          )}
-          {emailStatus === 'error' && (
-            <p className="mt-2 text-sm font-600 text-crit">{emailError}</p>
-          )}
         </div>
       </div>
 
