@@ -12,9 +12,9 @@ const EMAIL_REPORT_URL = `${API_BASE}/email-report`;
 const REPORT_PDF_URL = `${API_BASE}/report-pdf`;
 
 function colorFor(score) {
-  if (score >= 75) return 'var(--good)';
-  if (score >= 50) return 'var(--warn)';
-  return 'var(--crit)';
+  if (score >= 75) return 'hsl(var(--good))';
+  if (score >= 50) return 'hsl(var(--warn))';
+  return 'hsl(var(--crit))';
 }
 
 function dotColor(grade) {
@@ -28,12 +28,12 @@ function SubBar({ label, score }) {
     <div>
       <div className="flex items-center justify-between text-sm">
         <span className="font-600 text-foreground/80">{label}</span>
-        <span className="tnum text-lg font-800" style={{ color: scoreTextColor(score) }}>{score}</span>
+        <span className="tnum text-lg font-800" style={{ color: colorFor(score) }}>{score}</span>
       </div>
       <div className="mt-1 h-2.5 w-full rounded-full bg-muted">
         <div
           className="h-2.5 rounded-full transition-all duration-700"
-          style={{ width: `${Math.max(0, Math.min(100, score))}%`, background: scoreTextColor(score) }}
+          style={{ width: `${Math.max(0, Math.min(100, score))}%`, background: colorFor(score) }}
         />
       </div>
     </div>

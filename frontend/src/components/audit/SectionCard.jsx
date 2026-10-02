@@ -15,9 +15,9 @@ function gradeLabel(grade) {
 
 function barColor(score) {
   const s = Number(score) || 0;
-  if (s >= 75) return 'var(--good)';
-  if (s >= 50) return 'var(--warn)';
-  return 'var(--crit)';
+  if (s >= 75) return 'hsl(var(--good))';
+  if (s >= 50) return 'hsl(var(--warn))';
+  return 'hsl(var(--crit))';
 }
 
 // A compact dashboard stat tile: label, big number, and a mini score bar, so
