@@ -80,6 +80,14 @@ function toPoints(value) {
   return [];
 }
 
+// Turns the model IEP language into clean, numbered text for the clipboard so
+// a parent can paste a tidy list straight into an email to the IEP team.
+function modelLanguageCopyText(value) {
+  const pts = toPoints(value);
+  if (pts.length <= 1) return pts[0] || '';
+  return pts.map((p, i) => `${i + 1}. ${p}`).join('\n');
+}
+
 // Renders a field as a single paragraph when it is one point, or a tidy
 // numbered list when it is several — easy to scan and reference.
 function Points({ value, className }) {
@@ -123,9 +131,10 @@ function buildFullCopyText(section, detail) {
     lines.push(`${section.legal_basis || ''} (${section.citation})`.trim());
     lines.push('');
   }
-  if (detail?.model_language) {
+  const modelPts = toPoints(detail?.model_language);
+  if (modelPts.length) {
     lines.push('Language I am asking be added to the IEP:');
-    lines.push(detail.model_language);
+    modelPts.forEach((p, i) => lines.push(modelPts.length > 1 ? `${i + 1}. ${p}` : p));
     lines.push('');
   }
   if (detail?.how_progress_is_tracked) {
@@ -312,15 +321,15 @@ export default function SectionCard({ section, detailState, onExpand }) {
               {/* 5. The exact language, on its own, ready to paste. This is
                   the block a parent forwards into an email or drops into a
                   draft-IEP note before the next meeting. */}
-              {detail.model_language && (
+              {toPoints(detail.model_language).length > 0 && (
                 <div className="rounded-xl border-2 border-gold bg-gold-soft/60 p-4">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <BlockHead icon="📄" label={t('report.modelLanguage')} />
-                    <CopyButton text={detail.model_language} />
+                    <CopyButton text={modelLanguageCopyText(detail.model_language)} />
                   </div>
-                  <p className="mt-2 whitespace-pre-wrap rounded-lg border border-border bg-card p-3 text-[15px] leading-relaxed text-foreground/85">
-                    {detail.model_language}
-                  </p>
+                  <div className="mt-2 rounded-lg border border-border bg-card p-3">
+                    <Points value={detail.model_language} className="text-[15px] leading-relaxed text-foreground/85" />
+                  </div>
                 </div>
               )}
             </>
