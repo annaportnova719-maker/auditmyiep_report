@@ -951,8 +951,13 @@ def create_payment_intent():
             currency="usd",
             description="AuditMyIEP — one IEP audit",
             receipt_email=email or None,
-            # Card ONLY — no Stripe Link, no wallets, no "enter a code" step.
-            payment_method_types=["card"],
+            # Card-only is enforced on the client: the frontend uses Stripe's
+            # classic CardElement with confirmCardPayment, which submits only a
+            # card. Stripe retired the payment_method_types parameter (payment
+            # methods are now managed in the Dashboard), so we enable automatic
+            # payment methods but forbid redirect-based ones — keeping the flow
+            # on-page with no Link, wallet, or "enter a code" step.
+            automatic_payment_methods={"enabled": True, "allow_redirects": "never"},
             # MANUAL capture = the card is only AUTHORIZED (money held) at
             # payment time, NOT charged. We only actually capture (charge) it
             # after the audit successfully generates (see /api/audit). If the
