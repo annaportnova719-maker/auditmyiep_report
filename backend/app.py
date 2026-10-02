@@ -333,7 +333,7 @@ SECTION_DETAIL_TOOL = {
             "ask_start": {"type": "string", "description": "Step 1: the warm opening question to ask the team, in quotes, one or two sentences"},
             "ask_if_vague": {"type": "string", "description": "Step 2: the follow-up question if the answer is vague, in quotes, one or two sentences"},
             "ask_if_stuck": {"type": "string", "description": "Step 3: the legal-accountability question if the team won't budge, in quotes, one or two sentences"},
-            "what_to_ask_for": {"type": "string", "description": "1-2 sentences naming the concrete change to request. Plain prose, no markdown."},
+            "what_to_ask_for": {"type": "array", "items": {"type": "string"}, "description": "2 to 4 concise points naming the concrete change(s) to request. Each item is ONE complete point (a short sentence or two) a parent can read aloud in a meeting or paste into an email. Plain prose, no markdown, and do NOT add your own numbers or dashes (the app numbers them)."},
             "model_language": {"type": "string", "description": "ONLY the exact replacement language the IEP should contain — written so a parent can copy/paste it directly into an email or IEP-amendment request with no editing needed. No headers, no rationale, no markdown formatting, no comparison tables — just the clean sentence(s) the IEP should say."},
             "why_this_target": {"type": "array", "items": {"type": "string"}, "description": "2 to 4 concise points explaining why THIS specific target or number is right for this child, each tied to the data for this child or to the law. Each item is ONE complete point. Plain prose, no markdown, no leading numbers or dashes (the app numbers them)."},
             "how_progress_is_tracked": {"type": "string", "description": "1-3 short sentences on how and how often progress toward this will be measured and reported. Plain prose, no markdown."},
@@ -502,6 +502,7 @@ def run_section_detail(pdf_bytes: bytes, section_context: dict) -> dict:
             )
             detail["why_it_falls_short"] = _as_points(detail.get("why_it_falls_short"))
             detail["why_this_target"] = _as_points(detail.get("why_this_target"))
+            detail["what_to_ask_for"] = _as_points(detail.get("what_to_ask_for"))
             return detail
 
     raise RuntimeError("Claude did not return section detail — try again.")
@@ -612,9 +613,9 @@ def _pdf_styles():
         "h3": ParagraphStyle("H3X", parent=base["Heading3"], fontSize=11.5, leading=15, textColor=TEAL, spaceBefore=6, spaceAfter=3),
         "body": ParagraphStyle("BodyX", parent=base["BodyText"], fontSize=10.3, leading=14.5, alignment=TA_LEFT),
         "muted": ParagraphStyle("MutedX", parent=base["BodyText"], fontSize=9, leading=12.5, textColor=MUTED),
-        "label": ParagraphStyle("LabelX", parent=base["BodyText"], fontSize=9, leading=12, textColor=TEAL, spaceAfter=2),
-        "roseLabel": ParagraphStyle("RoseLabelX", parent=base["BodyText"], fontSize=11, leading=14, textColor=ROSE_TEXT, spaceAfter=2),
-        "brandLabel": ParagraphStyle("BrandLabelX", parent=base["BodyText"], fontSize=10.5, leading=13, textColor=TEAL, spaceAfter=2),
+        "label": ParagraphStyle("LabelX", parent=base["BodyText"], fontName="Helvetica-Bold", fontSize=11.5, leading=14, textColor=TEAL, spaceAfter=3),
+        "roseLabel": ParagraphStyle("RoseLabelX", parent=base["BodyText"], fontName="Helvetica-Bold", fontSize=13, leading=16, textColor=ROSE_TEXT, spaceAfter=3),
+        "brandLabel": ParagraphStyle("BrandLabelX", parent=base["BodyText"], fontName="Helvetica-Bold", fontSize=13, leading=16, textColor=TEAL, spaceAfter=3),
         "small_bold": ParagraphStyle("SmallBoldX", parent=base["BodyText"], fontSize=9.5, leading=13),
     }
 
@@ -750,13 +751,19 @@ def build_report_pdf(report: dict, section_details: dict) -> bytes:
 
         final_ask_lines = [Paragraph("YOUR FINAL ASK", styles["brandLabel"]), Spacer(1, 4)]
         has_final_ask = False
-        if detail.get("what_to_ask_for"):
-            final_ask_lines.append(Paragraph(f"<b>The change to request:</b> {_esc(detail.get('what_to_ask_for'))}", styles["body"]))
+        _ask_pts = _as_points(detail.get("what_to_ask_for"))
+        if _ask_pts:
+            final_ask_lines.append(Paragraph("<b>The change to request:</b>", styles["label"]))
+            if len(_ask_pts) > 1:
+                for _i, _p in enumerate(_ask_pts, 1):
+                    final_ask_lines.append(Paragraph(f"{_i}. {_esc(_p)}", styles["body"]))
+            else:
+                final_ask_lines.append(Paragraph(_esc(_ask_pts[0]), styles["body"]))
             final_ask_lines.append(Spacer(1, 4))
             has_final_ask = True
         _wt_pts = _as_points(detail.get("why_this_target"))
         if _wt_pts:
-            final_ask_lines.append(Paragraph("<b>Why this fits this child:</b>", styles["body"]))
+            final_ask_lines.append(Paragraph("<b>Why this fits this child:</b>", styles["label"]))
             if len(_wt_pts) > 1:
                 for _i, _p in enumerate(_wt_pts, 1):
                     final_ask_lines.append(Paragraph(f"{_i}. {_esc(_p)}", styles["body"]))

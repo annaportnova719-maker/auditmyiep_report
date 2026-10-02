@@ -15,7 +15,7 @@ function gradeLabel(grade) {
 
 function BlockHead({ icon, label }) {
   return (
-    <div className="flex items-center gap-2 text-xs font-700 uppercase tracking-wide text-primary">
+    <div className="flex items-center gap-2 text-[17px] font-800 uppercase tracking-wide text-primary">
       <span>{icon}</span>
       <span>{label}</span>
     </div>
@@ -28,8 +28,8 @@ function Step({ n, label, text }) {
     <li className="flex gap-3">
       <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-gold text-primary font-700 text-xs">{n}</span>
       <div className="min-w-0">
-        <div className="text-xs font-700 uppercase tracking-wide text-muted-foreground">{label}</div>
-        <p className="text-base leading-relaxed text-foreground/85">{text}</p>
+        <div className="text-[17px] font-800 uppercase tracking-wide text-foreground/75">{label}</div>
+        <p className="text-[15px] leading-relaxed text-foreground/85">{text}</p>
       </div>
     </li>
   );
@@ -89,7 +89,7 @@ function Points({ value, className }) {
   return (
     <ol className="mt-2 space-y-2.5">
       {pts.map((p, i) => (
-        <li key={i} className="flex gap-2.5 text-base leading-relaxed text-foreground/85">
+        <li key={i} className="flex gap-2.5 text-[15px] leading-relaxed text-foreground/85">
           <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-700 text-primary">{i + 1}</span>
           <span className="min-w-0">{p}</span>
         </li>
@@ -106,9 +106,10 @@ function buildFullCopyText(section, detail) {
   const lines = [];
   lines.push(`${section?.section_name || 'This section'} — request for the IEP team`);
   lines.push('');
-  if (detail?.what_to_ask_for) {
+  const askPts = toPoints(detail?.what_to_ask_for);
+  if (askPts.length) {
     lines.push('The change I am requesting:');
-    lines.push(detail.what_to_ask_for);
+    askPts.forEach((p, i) => lines.push(askPts.length > 1 ? `${i + 1}. ${p}` : p));
     lines.push('');
   }
   const whyPts = toPoints(detail?.why_this_target);
@@ -149,7 +150,7 @@ export default function SectionCard({ section, detailState, onExpand }) {
   const detail = detailState?.data || null;
 
   const services = Array.isArray(detail?.services_that_support_it) ? detail.services_that_support_it : [];
-  const hasFinalAsk = Boolean(detail?.what_to_ask_for || toPoints(detail?.why_this_target).length || section.citation);
+  const hasFinalAsk = Boolean(toPoints(detail?.what_to_ask_for).length || toPoints(detail?.why_this_target).length || section.citation);
   const hasTracking = Boolean(detail?.how_progress_is_tracked || services.length > 0);
 
   return (
@@ -163,24 +164,24 @@ export default function SectionCard({ section, detailState, onExpand }) {
         </span>
       </div>
 
-      <div className="mt-3 flex items-start gap-2 text-sm font-600 text-foreground">
+      <div className="mt-3 flex items-start gap-2 text-[17px] font-800 text-foreground">
         <MapPin className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
         <span>"{section.section_name}" · {beginsLabel} {section.page_number || '—'}</span>
       </div>
 
-      <p className="mt-3 text-base leading-relaxed text-foreground/85">
+      <p className="mt-3 text-[15px] leading-relaxed text-foreground/85">
         <b>{t('report.whatFound')}:</b> {section.what_we_found}
       </p>
 
       <div className="mt-4 rounded-xl border border-gold/40 bg-gold-soft/70 p-4">
-        <div className="text-xs font-700 uppercase tracking-wide text-gold">▸ {t('report.yourMove')}</div>
+        <div className="text-[17px] font-800 uppercase tracking-wide text-gold">▸ {t('report.yourMove')}</div>
         <p className="mt-1 text-sm font-500 text-foreground">{section.your_move}</p>
       </div>
 
       {section.if_no_detail_yet && section.grade !== 'Strong' && (
         <div className="mt-3 rounded-xl border border-brand/30 bg-brand-soft/60 p-4">
-          <div className="text-xs font-700 uppercase tracking-wide text-primary">🔎 {t('report.ifNoDetail')}</div>
-          <p className="mt-1 text-base leading-relaxed text-foreground/85">{section.if_no_detail_yet}</p>
+          <div className="text-[17px] font-800 uppercase tracking-wide text-primary">🔎 {t('report.ifNoDetail')}</div>
+          <p className="mt-1 text-[15px] leading-relaxed text-foreground/85">{section.if_no_detail_yet}</p>
         </div>
       )}
 
@@ -197,7 +198,7 @@ export default function SectionCard({ section, detailState, onExpand }) {
           Pink/rose background (reusing the app's existing --crit palette)
           so a parent can't scroll past it without noticing it's there. */}
       <div className="drawer mt-4 rounded-2xl border-2 border-crit/30 bg-crit-bg/60 p-4 sm:p-5">
-        <div className="flex items-center gap-2 text-sm font-800 uppercase tracking-wide text-crit">
+        <div className="flex items-center gap-2 text-[17px] font-800 uppercase tracking-wide text-crit">
           <BookOpen className="h-4 w-4" />
           {t('report.drawer')}
         </div>
@@ -233,11 +234,11 @@ export default function SectionCard({ section, detailState, onExpand }) {
               <div className="grid gap-3 sm:grid-cols-2">
                 <div className="rounded-lg border border-border bg-card p-3">
                   <BlockHead icon="📘" label={t('report.plainTerms')} />
-                  <p className="mt-1.5 text-base leading-relaxed text-foreground/85">{detail.in_plain_terms}</p>
+                  <p className="mt-1.5 text-[15px] leading-relaxed text-foreground/85">{detail.in_plain_terms}</p>
                 </div>
                 <div className="rounded-lg border border-border bg-card p-3">
                   <BlockHead icon="⚠️" label={t('report.fallsShort')} />
-                  <Points value={detail.why_it_falls_short} className="mt-1.5 text-base leading-relaxed text-foreground/85" />
+                  <Points value={detail.why_it_falls_short} className="mt-1.5 text-[15px] leading-relaxed text-foreground/85" />
                 </div>
               </div>
 
@@ -264,22 +265,22 @@ export default function SectionCard({ section, detailState, onExpand }) {
                     <CopyButton text={buildFullCopyText(section, detail)} label={t('report.copyAll')} />
                   </div>
                   <div className="mt-3 space-y-3">
-                    {detail.what_to_ask_for && (
+                    {toPoints(detail.what_to_ask_for).length > 0 && (
                       <div>
-                        <div className="text-xs font-700 uppercase tracking-wide text-muted-foreground">The change to request</div>
-                        <p className="mt-0.5 text-base leading-relaxed text-foreground/90">{detail.what_to_ask_for}</p>
+                        <div className="text-[17px] font-800 uppercase tracking-wide text-foreground/75">The change to request</div>
+                        <Points value={detail.what_to_ask_for} className="mt-0.5 text-[15px] leading-relaxed text-foreground/90" />
                       </div>
                     )}
                     {toPoints(detail.why_this_target).length > 0 && (
                       <div>
-                        <div className="text-xs font-700 uppercase tracking-wide text-muted-foreground">Why this fits this child</div>
-                        <Points value={detail.why_this_target} className="mt-0.5 text-base leading-relaxed text-foreground/90" />
+                        <div className="text-[17px] font-800 uppercase tracking-wide text-foreground/75">Why this fits this child</div>
+                        <Points value={detail.why_this_target} className="mt-0.5 text-[15px] leading-relaxed text-foreground/90" />
                       </div>
                     )}
                     {section.citation && (
                       <div>
-                        <div className="text-xs font-700 uppercase tracking-wide text-muted-foreground">The law behind it</div>
-                        <p className="mt-0.5 text-base leading-relaxed text-foreground/90">
+                        <div className="text-[17px] font-800 uppercase tracking-wide text-foreground/75">The law behind it</div>
+                        <p className="mt-0.5 text-[15px] leading-relaxed text-foreground/90">
                           {section.legal_basis} <span className="font-600 text-primary">({section.citation})</span>
                         </p>
                       </div>
@@ -293,14 +294,14 @@ export default function SectionCard({ section, detailState, onExpand }) {
                 <div className="rounded-lg border border-border bg-card p-3">
                   <BlockHead icon="📊" label="How progress gets tracked" />
                   {detail.how_progress_is_tracked && (
-                    <p className="mt-1.5 text-base leading-relaxed text-foreground/85">{detail.how_progress_is_tracked}</p>
+                    <p className="mt-1.5 text-[15px] leading-relaxed text-foreground/85">{detail.how_progress_is_tracked}</p>
                   )}
                   {services.length > 0 && (
                     <div className="mt-2">
-                      <div className="text-xs font-700 uppercase tracking-wide text-muted-foreground">{t('report.services')}</div>
+                      <div className="text-[17px] font-800 uppercase tracking-wide text-foreground/75">{t('report.services')}</div>
                       <ul className="mt-1 space-y-1">
                         {services.map((s, idx) => (
-                          <li key={idx} className="text-base leading-relaxed text-foreground/85">• {s}</li>
+                          <li key={idx} className="text-[15px] leading-relaxed text-foreground/85">• {s}</li>
                         ))}
                       </ul>
                     </div>
@@ -317,7 +318,7 @@ export default function SectionCard({ section, detailState, onExpand }) {
                     <BlockHead icon="📄" label={t('report.modelLanguage')} />
                     <CopyButton text={detail.model_language} />
                   </div>
-                  <p className="mt-2 whitespace-pre-wrap rounded-lg border border-border bg-card p-3 text-base leading-relaxed text-foreground/85">
+                  <p className="mt-2 whitespace-pre-wrap rounded-lg border border-border bg-card p-3 text-[15px] leading-relaxed text-foreground/85">
                     {detail.model_language}
                   </p>
                 </div>
