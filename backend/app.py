@@ -329,13 +329,13 @@ SECTION_DETAIL_TOOL = {
         ],
         "properties": {
             "in_plain_terms": {"type": "string", "description": "2-4 short sentences, plain English, no legal jargon, explaining what this section means for the child. Plain prose only — no markdown symbols (no **, no bullet dashes, no tables)."},
-            "why_it_falls_short": {"type": "string", "description": "2-4 short sentences on specifically why this falls short of the standard (or, for a Strong section, why it holds up). Plain prose only, no markdown."},
+            "why_it_falls_short": {"type": "array", "items": {"type": "string"}, "description": "3 to 5 concise, specific points on why this falls short of the standard (or, for a Strong section, why it holds up). Each item is ONE complete point (a short sentence or two) a parent can read aloud or paste into an email. Plain prose, no markdown, and do NOT add your own numbers or dashes (the app numbers them)."},
             "ask_start": {"type": "string", "description": "Step 1: the warm opening question to ask the team, in quotes, one or two sentences"},
             "ask_if_vague": {"type": "string", "description": "Step 2: the follow-up question if the answer is vague, in quotes, one or two sentences"},
             "ask_if_stuck": {"type": "string", "description": "Step 3: the legal-accountability question if the team won't budge, in quotes, one or two sentences"},
             "what_to_ask_for": {"type": "string", "description": "1-2 sentences naming the concrete change to request. Plain prose, no markdown."},
             "model_language": {"type": "string", "description": "ONLY the exact replacement language the IEP should contain — written so a parent can copy/paste it directly into an email or IEP-amendment request with no editing needed. No headers, no rationale, no markdown formatting, no comparison tables — just the clean sentence(s) the IEP should say."},
-            "why_this_target": {"type": "string", "description": "2-3 short sentences explaining why THIS specific target/number is right for this child, in plain prose. No markdown."},
+            "why_this_target": {"type": "array", "items": {"type": "string"}, "description": "2 to 4 concise points explaining why THIS specific target or number is right for this child, each tied to the data for this child or to the law. Each item is ONE complete point. Plain prose, no markdown, no leading numbers or dashes (the app numbers them)."},
             "how_progress_is_tracked": {"type": "string", "description": "1-3 short sentences on how and how often progress toward this will be measured and reported. Plain prose, no markdown."},
             "services_that_support_it": {
                 "type": "array",
@@ -487,9 +487,29 @@ def run_section_detail(pdf_bytes: bytes, section_context: dict) -> dict:
             detail["services_that_support_it"] = _normalize_services(
                 detail.get("services_that_support_it")
             )
+            detail["why_it_falls_short"] = _as_points(detail.get("why_it_falls_short"))
+            detail["why_this_target"] = _as_points(detail.get("why_this_target"))
             return detail
 
     raise RuntimeError("Claude did not return section detail — try again.")
+
+
+def _as_points(value) -> list:
+    """Normalize a field that may be a string or a list into a clean list of
+    point strings (strips any stray leading numbering or dashes)."""
+    import re as _re
+    if isinstance(value, list):
+        items = [str(v).strip() for v in value]
+    elif isinstance(value, str):
+        items = [p.strip() for p in _re.split(r"\n+", value)]
+    else:
+        return []
+    out = []
+    for it in items:
+        it = _re.sub(r"^[\-\u2022\d.)\s]+", "", it).strip()
+        if it:
+            out.append(it)
+    return out
 
 
 def _normalize_services(value) -> list:
@@ -692,8 +712,13 @@ def build_report_pdf(report: dict, section_details: dict) -> bytes:
             Paragraph(_esc(detail.get("in_plain_terms")), styles["body"]),
             Spacer(1, 6),
             Paragraph("Why it falls short" if grade != "Strong" else "Why it holds up", styles["label"]),
-            Paragraph(_esc(detail.get("why_it_falls_short")), styles["body"]),
         ]
+        _fs_pts = _as_points(detail.get("why_it_falls_short"))
+        if len(_fs_pts) > 1:
+            for _i, _p in enumerate(_fs_pts, 1):
+                understand_lines.append(Paragraph(f"{_i}. {_esc(_p)}", styles["body"]))
+        elif _fs_pts:
+            understand_lines.append(Paragraph(_esc(_fs_pts[0]), styles["body"]))
         story.extend(_box(understand_lines, ROSE_BG, ROSE_BORDER, split=True))
         story.append(Spacer(1, 8))
 
@@ -716,8 +741,14 @@ def build_report_pdf(report: dict, section_details: dict) -> bytes:
             final_ask_lines.append(Paragraph(f"<b>The change to request:</b> {_esc(detail.get('what_to_ask_for'))}", styles["body"]))
             final_ask_lines.append(Spacer(1, 4))
             has_final_ask = True
-        if detail.get("why_this_target"):
-            final_ask_lines.append(Paragraph(f"<b>Why this fits this child:</b> {_esc(detail.get('why_this_target'))}", styles["body"]))
+        _wt_pts = _as_points(detail.get("why_this_target"))
+        if _wt_pts:
+            final_ask_lines.append(Paragraph("<b>Why this fits this child:</b>", styles["body"]))
+            if len(_wt_pts) > 1:
+                for _i, _p in enumerate(_wt_pts, 1):
+                    final_ask_lines.append(Paragraph(f"{_i}. {_esc(_p)}", styles["body"]))
+            else:
+                final_ask_lines.append(Paragraph(_esc(_wt_pts[0]), styles["body"]))
             final_ask_lines.append(Spacer(1, 4))
             has_final_ask = True
         if section.get("citation"):

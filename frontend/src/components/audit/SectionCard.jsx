@@ -29,7 +29,7 @@ function Step({ n, label, text }) {
       <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-gold text-primary font-700 text-xs">{n}</span>
       <div className="min-w-0">
         <div className="text-xs font-700 uppercase tracking-wide text-muted-foreground">{label}</div>
-        <p className="text-sm leading-relaxed text-foreground/85">{text}</p>
+        <p className="text-base leading-relaxed text-foreground/85">{text}</p>
       </div>
     </li>
   );
@@ -66,6 +66,38 @@ function CopyButton({ text, label }) {
   );
 }
 
+// Normalize a field that may be a plain string OR an array of points into a
+// clean list of points. Lets the report render dense narrative fields as
+// scannable numbered lists a parent can reference in a meeting.
+function toPoints(value) {
+  if (Array.isArray(value)) return value.map((v) => String(v).trim()).filter(Boolean);
+  if (typeof value === 'string') {
+    return value
+      .split(/\n+/)
+      .map((s) => s.replace(/^[\-\u2022\d.)\s]+/, '').trim())
+      .filter(Boolean);
+  }
+  return [];
+}
+
+// Renders a field as a single paragraph when it is one point, or a tidy
+// numbered list when it is several — easy to scan and reference.
+function Points({ value, className }) {
+  const pts = toPoints(value);
+  if (pts.length === 0) return null;
+  if (pts.length === 1) return <p className={className}>{pts[0]}</p>;
+  return (
+    <ol className="mt-2 space-y-2.5">
+      {pts.map((p, i) => (
+        <li key={i} className="flex gap-2.5 text-base leading-relaxed text-foreground/85">
+          <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-700 text-primary">{i + 1}</span>
+          <span className="min-w-0">{p}</span>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
 // Plain-text assembly of everything a parent needs to put a request in
 // writing for this one section — meant to be pasted directly into an
 // email to the IEP team, or dropped into notes for a draft-IEP meeting.
@@ -79,9 +111,10 @@ function buildFullCopyText(section, detail) {
     lines.push(detail.what_to_ask_for);
     lines.push('');
   }
-  if (detail?.why_this_target) {
+  const whyPts = toPoints(detail?.why_this_target);
+  if (whyPts.length) {
     lines.push('Why this is right for my child:');
-    lines.push(detail.why_this_target);
+    whyPts.forEach((p, i) => lines.push(whyPts.length > 1 ? `${i + 1}. ${p}` : p));
     lines.push('');
   }
   if (section?.citation) {
@@ -116,7 +149,7 @@ export default function SectionCard({ section, detailState, onExpand }) {
   const detail = detailState?.data || null;
 
   const services = Array.isArray(detail?.services_that_support_it) ? detail.services_that_support_it : [];
-  const hasFinalAsk = Boolean(detail?.what_to_ask_for || detail?.why_this_target || section.citation);
+  const hasFinalAsk = Boolean(detail?.what_to_ask_for || toPoints(detail?.why_this_target).length || section.citation);
   const hasTracking = Boolean(detail?.how_progress_is_tracked || services.length > 0);
 
   return (
@@ -135,7 +168,7 @@ export default function SectionCard({ section, detailState, onExpand }) {
         <span>"{section.section_name}" · {beginsLabel} {section.page_number || '—'}</span>
       </div>
 
-      <p className="mt-3 text-sm leading-relaxed text-foreground/85">
+      <p className="mt-3 text-base leading-relaxed text-foreground/85">
         <b>{t('report.whatFound')}:</b> {section.what_we_found}
       </p>
 
@@ -147,7 +180,7 @@ export default function SectionCard({ section, detailState, onExpand }) {
       {section.if_no_detail_yet && section.grade !== 'Strong' && (
         <div className="mt-3 rounded-xl border border-brand/30 bg-brand-soft/60 p-4">
           <div className="text-xs font-700 uppercase tracking-wide text-primary">🔎 {t('report.ifNoDetail')}</div>
-          <p className="mt-1 text-sm leading-relaxed text-foreground/85">{section.if_no_detail_yet}</p>
+          <p className="mt-1 text-base leading-relaxed text-foreground/85">{section.if_no_detail_yet}</p>
         </div>
       )}
 
@@ -200,11 +233,11 @@ export default function SectionCard({ section, detailState, onExpand }) {
               <div className="grid gap-3 sm:grid-cols-2">
                 <div className="rounded-lg border border-border bg-card p-3">
                   <BlockHead icon="📘" label={t('report.plainTerms')} />
-                  <p className="mt-1.5 text-sm leading-relaxed text-foreground/85">{detail.in_plain_terms}</p>
+                  <p className="mt-1.5 text-base leading-relaxed text-foreground/85">{detail.in_plain_terms}</p>
                 </div>
                 <div className="rounded-lg border border-border bg-card p-3">
                   <BlockHead icon="⚠️" label={t('report.fallsShort')} />
-                  <p className="mt-1.5 text-sm leading-relaxed text-foreground/85">{detail.why_it_falls_short}</p>
+                  <Points value={detail.why_it_falls_short} className="mt-1.5 text-base leading-relaxed text-foreground/85" />
                 </div>
               </div>
 
@@ -234,19 +267,19 @@ export default function SectionCard({ section, detailState, onExpand }) {
                     {detail.what_to_ask_for && (
                       <div>
                         <div className="text-xs font-700 uppercase tracking-wide text-muted-foreground">The change to request</div>
-                        <p className="mt-0.5 text-sm leading-relaxed text-foreground/90">{detail.what_to_ask_for}</p>
+                        <p className="mt-0.5 text-base leading-relaxed text-foreground/90">{detail.what_to_ask_for}</p>
                       </div>
                     )}
-                    {detail.why_this_target && (
+                    {toPoints(detail.why_this_target).length > 0 && (
                       <div>
                         <div className="text-xs font-700 uppercase tracking-wide text-muted-foreground">Why this fits this child</div>
-                        <p className="mt-0.5 text-sm leading-relaxed text-foreground/90">{detail.why_this_target}</p>
+                        <Points value={detail.why_this_target} className="mt-0.5 text-base leading-relaxed text-foreground/90" />
                       </div>
                     )}
                     {section.citation && (
                       <div>
                         <div className="text-xs font-700 uppercase tracking-wide text-muted-foreground">The law behind it</div>
-                        <p className="mt-0.5 text-sm leading-relaxed text-foreground/90">
+                        <p className="mt-0.5 text-base leading-relaxed text-foreground/90">
                           {section.legal_basis} <span className="font-600 text-primary">({section.citation})</span>
                         </p>
                       </div>
@@ -260,14 +293,14 @@ export default function SectionCard({ section, detailState, onExpand }) {
                 <div className="rounded-lg border border-border bg-card p-3">
                   <BlockHead icon="📊" label="How progress gets tracked" />
                   {detail.how_progress_is_tracked && (
-                    <p className="mt-1.5 text-sm leading-relaxed text-foreground/85">{detail.how_progress_is_tracked}</p>
+                    <p className="mt-1.5 text-base leading-relaxed text-foreground/85">{detail.how_progress_is_tracked}</p>
                   )}
                   {services.length > 0 && (
                     <div className="mt-2">
                       <div className="text-xs font-700 uppercase tracking-wide text-muted-foreground">{t('report.services')}</div>
                       <ul className="mt-1 space-y-1">
                         {services.map((s, idx) => (
-                          <li key={idx} className="text-sm leading-relaxed text-foreground/85">• {s}</li>
+                          <li key={idx} className="text-base leading-relaxed text-foreground/85">• {s}</li>
                         ))}
                       </ul>
                     </div>
@@ -284,7 +317,7 @@ export default function SectionCard({ section, detailState, onExpand }) {
                     <BlockHead icon="📄" label={t('report.modelLanguage')} />
                     <CopyButton text={detail.model_language} />
                   </div>
-                  <p className="mt-2 whitespace-pre-wrap rounded-lg border border-border bg-card p-3 text-sm leading-relaxed text-foreground/85">
+                  <p className="mt-2 whitespace-pre-wrap rounded-lg border border-border bg-card p-3 text-base leading-relaxed text-foreground/85">
                     {detail.model_language}
                   </p>
                 </div>
