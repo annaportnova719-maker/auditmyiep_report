@@ -71,7 +71,7 @@ CORS(app)  # allows the React dev server (a different port) to call this API
 
 MAX_FILE_BYTES = 25 * 1024 * 1024  # reject oversized uploads before they cost tokens
 MAX_PDF_PAGES = 60  # a normal IEP is ~10–30 pages; this blocks giant packets
-CLAUDE_MODEL = os.environ.get("CLAUDE_MODEL", "claude-sonnet-4-5")
+CLAUDE_MODEL = os.environ.get("CLAUDE_MODEL", "claude-opus-4-8")
 
 # Optional: used only to count pages for the cost guard. If it isn't
 # installed, the page check is skipped (everything else still works).
@@ -456,13 +456,26 @@ def run_section_detail(pdf_bytes: bytes, section_context: dict) -> dict:
         + " Now go deeper on this ONE section only, per your instructions."
     )
 
+    # Prompt caching: put the stable, reused content FIRST — the full IEP text
+    # (identical for every section), which the cache prefix also covers the
+    # section system prompt and tools — and mark it ephemeral. The first section
+    # in an audit pays the one-time cache write; the other ~12 sections read the
+    # IEP from cache (~10x cheaper on input) instead of re-sending it at full
+    # price. The per-section context goes in a second, uncached block after it.
     iep_text = _iep_text_or_none(pdf_bytes)
     if iep_text:
-        content = [{"type": "text", "text": context_text + "\n\nFull IEP text:\n\n" + iep_text}]
+        content = [
+            {"type": "text",
+             "text": "Full IEP text (reference for this and every other section):\n\n" + iep_text,
+             "cache_control": {"type": "ephemeral"}},
+            {"type": "text", "text": context_text},
+        ]
     else:
         pdf_b64 = base64.standard_b64encode(pdf_bytes).decode("utf-8")
         content = [
-            {"type": "document", "source": {"type": "base64", "media_type": "application/pdf", "data": pdf_b64}},
+            {"type": "document",
+             "source": {"type": "base64", "media_type": "application/pdf", "data": pdf_b64},
+             "cache_control": {"type": "ephemeral"}},
             {"type": "text", "text": context_text},
         ]
 
