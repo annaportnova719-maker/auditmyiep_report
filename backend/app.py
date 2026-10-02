@@ -1143,6 +1143,14 @@ FRONTEND_DIST = os.path.join(os.path.dirname(__file__), '..', 'frontend', 'dist'
 
 BACKEND_DIR = os.path.dirname(__file__)
 
+
+@app.route('/og-image.png')
+def og_image():
+    # The link-preview (Open Graph) image shared on texts/social. Served from
+    # the backend dir; defined before serve_react so the catch-all doesn't
+    # swallow it and return index.html.
+    return send_from_directory(BACKEND_DIR, 'og-image.png')
+
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def serve_react(path):
