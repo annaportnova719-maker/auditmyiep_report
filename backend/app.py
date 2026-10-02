@@ -607,6 +607,26 @@ BRAND_BORDER = TEAL
 MUTED = colors.HexColor("#666666")
 
 
+# Brand fonts for the PDF (Fraunces display + Plus Jakarta Sans body), embedded
+# from backend/fonts/. Falls back to Helvetica if the files are missing, so the
+# PDF always builds.
+_FONT_DIR = os.path.join(os.path.dirname(__file__), "fonts")
+HEAD_FONT, BODY_FONT, BODY_BOLD, LABEL_FONT = "Helvetica-Bold", "Helvetica", "Helvetica-Bold", "Helvetica-Bold"
+try:
+    from reportlab.pdfbase import pdfmetrics as _pdfmetrics
+    from reportlab.pdfbase.ttfonts import TTFont as _TTFont
+    _pdfmetrics.registerFont(_TTFont("Fraunces", os.path.join(_FONT_DIR, "fraunces-600.ttf")))
+    _pdfmetrics.registerFont(_TTFont("Fraunces-Bold", os.path.join(_FONT_DIR, "fraunces-700.ttf")))
+    _pdfmetrics.registerFont(_TTFont("Jakarta", os.path.join(_FONT_DIR, "jakarta-400.ttf")))
+    _pdfmetrics.registerFont(_TTFont("Jakarta-Bold", os.path.join(_FONT_DIR, "jakarta-700.ttf")))
+    _pdfmetrics.registerFont(_TTFont("Jakarta-XBold", os.path.join(_FONT_DIR, "jakarta-800.ttf")))
+    _pdfmetrics.registerFontFamily("Jakarta", normal="Jakarta", bold="Jakarta-Bold", italic="Jakarta", boldItalic="Jakarta-Bold")
+    _pdfmetrics.registerFontFamily("Fraunces", normal="Fraunces", bold="Fraunces-Bold")
+    HEAD_FONT, BODY_FONT, BODY_BOLD, LABEL_FONT = "Fraunces", "Jakarta", "Jakarta-Bold", "Jakarta-XBold"
+except Exception:
+    pass
+
+
 def _grade_hex(grade: str) -> str:
     if grade == "Strong":
         return "#1f7a4c"
@@ -648,16 +668,20 @@ def _score_bar(score, width, height=7):
 def _pdf_styles():
     base = getSampleStyleSheet()
     return {
-        "title": ParagraphStyle("TitleX", parent=base["Title"], fontSize=20, leading=24, textColor=TEAL, spaceAfter=6),
-        "h2": ParagraphStyle("H2X", parent=base["Heading2"], fontSize=14, leading=18, textColor=TEAL, spaceBefore=2, spaceAfter=4),
-        "h3": ParagraphStyle("H3X", parent=base["Heading3"], fontSize=11.5, leading=15, textColor=TEAL, spaceBefore=6, spaceAfter=3),
-        "body": ParagraphStyle("BodyX", parent=base["BodyText"], fontSize=10.3, leading=14.5, alignment=TA_LEFT),
-        "muted": ParagraphStyle("MutedX", parent=base["BodyText"], fontSize=9, leading=12.5, textColor=MUTED),
-        "label": ParagraphStyle("LabelX", parent=base["BodyText"], fontName="Helvetica-Bold", fontSize=11.5, leading=14, textColor=TEAL, spaceAfter=3),
-        "roseLabel": ParagraphStyle("RoseLabelX", parent=base["BodyText"], fontName="Helvetica-Bold", fontSize=13, leading=16, textColor=ROSE_TEXT, spaceAfter=3),
-        "brandLabel": ParagraphStyle("BrandLabelX", parent=base["BodyText"], fontName="Helvetica-Bold", fontSize=13, leading=16, textColor=TEAL, spaceAfter=3),
-        "small_bold": ParagraphStyle("SmallBoldX", parent=base["BodyText"], fontSize=9.5, leading=13),
-        "tilenum": ParagraphStyle("TileNumX", parent=base["BodyText"], fontName="Helvetica-Bold", fontSize=15, leading=17),
+        "eyebrow": ParagraphStyle("EyebrowX", parent=base["BodyText"], fontName=LABEL_FONT, fontSize=10.5, leading=13, textColor=GOLD_TEXT, spaceAfter=2),
+        "title": ParagraphStyle("TitleX", parent=base["Title"], fontName=HEAD_FONT, fontSize=26, leading=30, textColor=TEAL, spaceAfter=6),
+        "h2": ParagraphStyle("H2X", parent=base["Heading2"], fontName=HEAD_FONT, fontSize=15, leading=19, textColor=TEAL, spaceBefore=2, spaceAfter=4),
+        "h3": ParagraphStyle("H3X", parent=base["Heading3"], fontName=HEAD_FONT, fontSize=13, leading=16, textColor=TEAL, spaceBefore=6, spaceAfter=3),
+        "body": ParagraphStyle("BodyX", parent=base["BodyText"], fontName=BODY_FONT, fontSize=10.3, leading=14.8, alignment=TA_LEFT),
+        "muted": ParagraphStyle("MutedX", parent=base["BodyText"], fontName=BODY_FONT, fontSize=9, leading=12.5, textColor=MUTED),
+        "label": ParagraphStyle("LabelX", parent=base["BodyText"], fontName=LABEL_FONT, fontSize=11.5, leading=14, textColor=TEAL, spaceAfter=3),
+        "roseLabel": ParagraphStyle("RoseLabelX", parent=base["BodyText"], fontName=LABEL_FONT, fontSize=12.5, leading=15, textColor=ROSE_TEXT, spaceAfter=3),
+        "brandLabel": ParagraphStyle("BrandLabelX", parent=base["BodyText"], fontName=LABEL_FONT, fontSize=12.5, leading=15, textColor=TEAL, spaceAfter=3),
+        "small_bold": ParagraphStyle("SmallBoldX", parent=base["BodyText"], fontName=BODY_BOLD, fontSize=9.5, leading=13),
+        "tilenum": ParagraphStyle("TileNumX", parent=base["BodyText"], fontName=HEAD_FONT, fontSize=16, leading=18),
+        "bandtitle": ParagraphStyle("BandTitleX", parent=base["BodyText"], fontName=HEAD_FONT, fontSize=15.5, leading=18, textColor=colors.white),
+        "bandmeta": ParagraphStyle("BandMetaX", parent=base["BodyText"], fontName=BODY_FONT, fontSize=8.5, leading=11, textColor=colors.HexColor("#cfe0d8")),
+        "bandgrade": ParagraphStyle("BandGradeX", parent=base["BodyText"], fontName=LABEL_FONT, fontSize=12, leading=14, textColor=colors.white, alignment=2),
     }
 
 
@@ -693,7 +717,8 @@ def build_report_pdf(report: dict, section_details: dict) -> bytes:
 
     # ---- Cover: overall score, summary, strengths, weak points ----
     ov = report.get("overall_score")
-    story.append(Paragraph("AuditMyIEP — Your IEP Audit Report", styles["title"]))
+    story.append(Paragraph("AUDITMYIEP", styles["eyebrow"]))
+    story.append(Paragraph("Your IEP Audit Report", styles["title"]))
     story.append(Paragraph(f'Overall score: <b><font color="{_score_color_hex(ov)}">{_esc(ov)}/100</font></b> — {_esc(report.get("verdict"))}', styles["body"]))
     story.append(Spacer(1, 5))
     story.append(_score_bar(ov, CONTENT_WIDTH, 9))
@@ -766,12 +791,24 @@ def build_report_pdf(report: dict, section_details: dict) -> bytes:
         grade = section.get("grade") or "Needs work"
         gcolor = _grade_hex(grade)
 
-        story.append(Paragraph(_esc(section.get("section_name")), styles["h2"]))
-        story.append(Paragraph(
-            f'<font color="{gcolor}"><b>{_esc(grade)}</b></font> &nbsp;&middot;&nbsp; begins p. {_esc(section.get("page_number"))}',
-            styles["muted"],
-        ))
-        story.append(Spacer(1, 7))
+        _band = Table([[
+            [Paragraph(_esc(section.get("section_name")), styles["bandtitle"]),
+             Paragraph(f'begins p. {_esc(section.get("page_number"))}', styles["bandmeta"])],
+            Paragraph(_esc(grade), styles["bandgrade"]),
+        ]], colWidths=[CONTENT_WIDTH * 0.72, CONTENT_WIDTH * 0.28])
+        _band.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, -1), TEAL),
+            ("ROUNDEDCORNERS", [9, 9, 0, 0]),
+            ("LEFTPADDING", (0, 0), (-1, -1), 14), ("RIGHTPADDING", (0, 0), (-1, -1), 14),
+            ("TOPPADDING", (0, 0), (-1, -1), 11), ("BOTTOMPADDING", (0, 0), (-1, -1), 11),
+            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+            ("ALIGN", (1, 0), (1, 0), "RIGHT"),
+        ]))
+        story.append(_band)
+        _accent = Table([[""]], colWidths=[CONTENT_WIDTH], rowHeights=[4])
+        _accent.setStyle(TableStyle([("BACKGROUND", (0, 0), (-1, -1), colors.HexColor(gcolor))]))
+        story.append(_accent)
+        story.append(Spacer(1, 11))
         _third = (CONTENT_WIDTH - 0.5 * inch) / 3
 
         def _sec_tile(_lbl, _val):
