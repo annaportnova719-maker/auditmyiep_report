@@ -115,7 +115,7 @@ function UploadScreen({ onSubmit, errorMsg, paymentsEnabled, amountCents, config
           {t('hero.title')}
         </h1>
         <p className="mt-3 text-base leading-relaxed text-foreground/90">
-          A section-by-section audit: what's strong, what's vague, and the exact words to ask for instead.
+          A section-by-section audit: understand every section, see what’s weak and what’s missing, and get the exact words to ask for.
         </p>
 
         {errorMsg && (
