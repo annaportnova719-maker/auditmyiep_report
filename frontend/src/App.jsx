@@ -127,7 +127,7 @@ function UploadScreen({ onSubmit, errorMsg, paymentsEnabled, amountCents, config
         {/* Step 1 label so the flow reads as clear steps. */}
         <div className="mt-6 flex items-center gap-2 text-sm font-800 text-primary">
           <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gold text-[#0E1C17] text-xs">1</span>
-          Upload your child's IEP (PDF)
+          Upload your child's IEP or draft IEP (PDF)
         </div>
         <p className="mt-2 flex items-start gap-1.5 text-xs font-700 leading-relaxed text-good">
           <svg viewBox="0 0 24 24" fill="none" className="mt-0.5 h-4 w-4 flex-shrink-0"><rect x="4" y="10" width="16" height="10" rx="2" stroke="currentColor" strokeWidth="1.8"/><path d="M8 10V7a4 4 0 0 1 8 0v3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
@@ -180,7 +180,7 @@ function UploadScreen({ onSubmit, errorMsg, paymentsEnabled, amountCents, config
             </>
           ) : (
             <>
-              <p className="text-sm font-600 text-foreground/80">Drag your IEP PDF here, or</p>
+              <p className="text-sm font-600 text-foreground/80">Drag your IEP or draft PDF here, or</p>
               <button
                 type="button"
                 onClick={() => inputRef.current?.click()}
