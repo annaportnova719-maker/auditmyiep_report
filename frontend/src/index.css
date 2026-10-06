@@ -46,7 +46,7 @@
     --foreground: 140 20% 92%;
     --card: 160 31% 11%;       /* #142620 — matches landing surface */
     --card-foreground: 140 20% 92%;
-    --primary: 170 55% 45%;
+    --primary: 150 46% 52%;
     --primary-foreground: 175 30% 8%;
     --secondary: 159 31% 15%;
     --secondary-foreground: 140 20% 92%;
@@ -58,9 +58,9 @@
     --destructive-foreground: 0 0% 98%;
     --border: 160 20% 22%;
     --input: 160 20% 22%;
-    --ring: 170 55% 45%;
+    --ring: 150 46% 52%;
 
-    --brand: 170 55% 45%;
+    --brand: 150 46% 52%;
     --brand-soft: 160 30% 16%;
     --gold: 37 70% 55%;
     --gold-soft: 160 24% 13%;  /* clean dark green highlight (was muddy brown) */
