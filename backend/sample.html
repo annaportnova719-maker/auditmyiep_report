@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sample Audit Report — AuditMyIEP</title>
+<meta name="description" content="See an example AuditMyIEP report: every IEP section scored, weak spots flagged, and the exact words to use — shown with a fictional student.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  /* Layout: sticky left section-rail + right "brief" pages; each section opens with a
+     prominent score bar, then stacked labeled blocks; overview is a scorecard dashboard.
+     Committed single dark-green brand look (matches the live site). */
+  :root{
+    color-scheme: dark;
+    --bg:#0E1C17; --panel:#142620; --panel-2:#0B1814; --raise:#1A3129;
+    --ink:#ECF3EF; --muted:#A7BDB3; --faint:#7E938B;
+    --border:#24413A; --border-soft:#1d352e;
+    --gold:#E6A860; --gold-soft:#20291d;
+    --green:#5DBF90; --amber:#E6A860; --red:#E0765C;
+    --green-bg:#10271d; --amber-bg:#271f12; --red-bg:#2a1a15;
+    --ff-display:'Fraunces',Georgia,serif;
+    --ff-body:'Plus Jakarta Sans',system-ui,sans-serif;
+    --maxw:1180px;
+  }
+  *{box-sizing:border-box}
+  body{background:var(--bg);color:var(--ink);font-family:var(--ff-body);line-height:1.5;margin:0}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding-block:28px;padding-left:16px;padding-right:16px}
+  h1,h2,h3{font-family:var(--ff-display);text-wrap:balance;margin:0}
+  .tnum{font-variant-numeric:tabular-nums}
+  a{color:var(--gold)}
+
+  /* Mast */
+  .mast{background:var(--panel);border:1px solid var(--border);border-radius:22px;padding:26px 28px}
+  .brandrow{display:flex;align-items:center;gap:12px;color:var(--gold)}
+  .shield{width:34px;height:34px;border-radius:10px;background:var(--panel-2);display:grid;place-items:center}
+  .brandname{font-family:var(--ff-display);font-weight:700;font-size:19px}
+  .mast h1{font-size:clamp(26px,4vw,38px);font-weight:600;margin-top:14px;letter-spacing:-.5px}
+  .mast .sub{color:var(--muted);margin-top:8px;max-width:68ch}
+
+  /* Scorecard hero (overview) */
+  .scorehero{display:flex;flex-wrap:wrap;gap:28px;align-items:center;margin-top:18px}
+  .ring{flex:none}
+  .scoremeta{flex:1;min-width:240px}
+  .verdict{font-family:var(--ff-display);font-size:24px;font-weight:700;color:var(--amber)}
+  .subbars{display:grid;gap:14px;margin-top:16px;max-width:460px}
+  .subbar .lab{display:flex;justify-content:space-between;font-size:13px;font-weight:700;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.06em}
+  .track{height:10px;border-radius:99px;background:var(--raise);overflow:hidden}
+  .fill{height:100%;border-radius:99px}
+
+  .layout{display:flex;gap:22px;margin-top:22px;align-items:flex-start}
+  /* rail */
+  nav.rail{width:230px;flex:none;position:sticky;top:env(safe-area-inset-top,12px);display:flex;flex-direction:column;gap:8px}
+  @media(max-width:820px){ .layout{flex-direction:column} nav.rail{width:100%;position:static;flex-direction:row;overflow-x:auto;padding-bottom:6px} }
+  .tab{display:flex;align-items:center;gap:10px;text-align:left;border:1px solid var(--border);background:var(--panel);color:var(--ink);
+    border-radius:13px;padding:11px 13px;font-size:13.5px;font-weight:600;cursor:pointer;white-space:nowrap;transition:.15s}
+  .tab:hover{background:var(--raise)}
+  .tab.active{background:var(--gold);color:#0E1C17;border-color:var(--gold);font-weight:800}
+  .tab .dot{width:9px;height:9px;border-radius:99px;flex:none}
+  .tab.active .dot{background:#0E1C17}
+  .content{flex:1;min-width:0;display:flex;flex-direction:column;gap:18px}
+
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:20px;padding:22px}
+  .panel-2{background:var(--panel-2)}
+
+  /* section score header */
+  .scorehead{display:flex;flex-wrap:wrap;gap:18px;align-items:center;justify-content:space-between}
+  .scorehead .loc{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:7px}
+  .scorehead h2{font-size:26px;font-weight:600;margin-top:3px}
+  .bigscore{display:flex;align-items:baseline;gap:4px;font-family:var(--ff-display);font-weight:700}
+  .bigscore b{font-size:46px;line-height:1} .bigscore span{font-size:17px;color:var(--muted)}
+  .gradepill{display:inline-flex;align-items:center;gap:7px;border-radius:99px;padding:6px 13px;font-size:13px;font-weight:800;border:1px solid}
+  .scorebar{margin-top:16px}
+  .scorebar .track{height:14px}
+  /* per-tab dashboard tiles */
+  .tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:16px}
+  @media(max-width:620px){.tiles{grid-template-columns:repeat(2,1fr)}}
+  .tile{background:var(--panel-2);border:1px solid var(--border-soft);border-radius:14px;padding:14px}
+  .tile .tl{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+  .tile .tv{font-family:var(--ff-display);font-weight:700;font-size:30px;margin-top:4px;line-height:1}
+  .tile .tbar{height:7px;border-radius:99px;background:var(--raise);overflow:hidden;margin-top:10px}
+
+  /* labeled block */
+  .block{margin-top:2px}
+  .eyebrow{display:flex;align-items:center;gap:9px;font-size:16px;font-weight:800;letter-spacing:.03em;text-transform:uppercase;font-family:var(--ff-body)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:620px){.grid2{grid-template-columns:1fr}}
+  .mini{background:var(--panel-2);border:1px solid var(--border-soft);border-radius:14px;padding:16px}
+  .mini .eyebrow{font-size:14px}
+  .body{font-size:15px;color:#DCE8E2;line-height:1.6;margin-top:10px}
+  ol.points{margin:12px 0 0;padding:0;list-style:none;display:grid;gap:11px}
+  ol.points li{display:flex;gap:11px;font-size:15px;color:#DCE8E2;line-height:1.55}
+  ol.points .n{flex:none;width:23px;height:23px;border-radius:99px;background:var(--gold-soft);color:var(--gold);
+    display:grid;place-items:center;font-size:12.5px;font-weight:800}
+
+  /* question ladder */
+  .ladder{display:grid;gap:12px;margin-top:14px}
+  .step{display:flex;gap:13px;background:var(--panel-2);border:1px solid var(--border-soft);border-radius:14px;padding:15px}
+  .step .sn{flex:none;width:30px;height:30px;border-radius:99px;background:var(--gold);color:#0E1C17;display:grid;place-items:center;font-weight:800}
+  .step .slab{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+  .step .sq{font-size:15px;color:var(--ink);margin-top:4px;line-height:1.5}
+
+  /* final ask + language */
+  .ask{border:1.5px solid var(--gold);border-radius:18px;padding:20px;background:linear-gradient(180deg,rgba(230,168,96,.06),transparent)}
+  .asklabel{font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--gold);margin-bottom:6px}
+  .asklabel.teal{color:var(--green)}
+  .lawtag{display:inline-block;margin-top:4px;font-size:12.5px;font-weight:700;color:var(--green);background:var(--green-bg);border:1px solid #244a3a;border-radius:8px;padding:3px 9px}
+  .copybox{position:relative;background:var(--panel-2);border:1px dashed var(--gold);border-radius:14px;padding:16px 16px 16px;margin-top:6px}
+  .copybtn{position:absolute;top:12px;right:12px;background:var(--gold);color:#0E1C17;border:none;border-radius:9px;padding:6px 12px;font-weight:800;font-size:12.5px;cursor:pointer;font-family:var(--ff-body)}
+  .copybox ol{margin:6px 0 0;padding-left:20px;display:grid;gap:9px}
+  .copybox li{font-size:14.5px;color:#E8F1EC;line-height:1.55}
+
+  .foot{color:var(--faint);font-size:12.5px;margin-top:8px;text-align:center}
+  @media(prefers-reduced-motion:no-preference){ .fill{animation:grow .9s cubic-bezier(.2,.7,.2,1) both} }
+  @keyframes grow{from{width:0}}
+
+  /* sample banner + CTAs */
+  .samplebar{display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between;
+    background:linear-gradient(180deg,rgba(230,168,96,.10),rgba(230,168,96,.03));
+    border:1px solid var(--gold);border-radius:16px;padding:14px 18px;margin-bottom:16px}
+  .samplebar .st{font-size:14px;color:var(--ink);line-height:1.5;max-width:70ch}
+  .samplebar .st b{color:var(--gold)}
+  .cta{display:inline-flex;align-items:center;gap:8px;background:var(--gold);color:#0E1C17;border:none;
+    border-radius:11px;padding:11px 18px;font-weight:800;font-size:14.5px;cursor:pointer;
+    font-family:var(--ff-body);text-decoration:none;white-space:nowrap}
+  .cta.ghost{background:transparent;color:var(--gold);border:1px solid var(--gold)}
+  .endcta{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;align-items:center;margin:22px 0 4px}
+  .backlink{display:inline-block;margin-bottom:10px;color:var(--muted);font-size:13.5px;text-decoration:none}
+  .backlink:hover{color:var(--gold)}
+</style>
+
+<div class="wrap">
+  <a class="backlink" href="/">← Back to AuditMyIEP</a>
+  <div class="samplebar">
+    <span class="st"><b>Sample report</b> — this is an example built with a <b>fictional student (“Ethan”)</b> so you can see exactly how your report is laid out: every section scored, the weak spots flagged, and the precise words to use. Your real report is generated from your own IEP.</span>
+    <a class="cta" href="/audit">Get my free audit →</a>
+  </div>
+  <!-- MAST -->
+  <div class="mast">
+    <div class="brandrow">
+      <span class="shield"><svg viewBox="0 0 24 24" width="20" height="20" fill="none"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z" stroke="#E6A860" stroke-width="1.6"/><path d="M9 12l2 2 4-4" stroke="#E6A860" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      <span class="brandname">AuditMyIEP</span>
+    </div>
+    <h1>Ethan's IEP — Audit Report</h1>
+    <p class="sub">12 sections reviewed against the IDEA, Colorado's ECEA rules, the CDE Procedural Guidance, and the <em>Endrew&nbsp;F.</em> progress standard.</p>
+
+    <div class="scorehero">
+      <svg class="ring" width="150" height="150" viewBox="0 0 120 120">
+        <circle cx="60" cy="60" r="52" fill="none" stroke="#1A3129" stroke-width="13"/>
+        <circle cx="60" cy="60" r="52" fill="none" stroke="#E6A860" stroke-width="13" stroke-linecap="round" stroke-dasharray="326.7" stroke-dashoffset="124" transform="rotate(-90 60 60)"/>
+        <text x="60" y="57" text-anchor="middle" font-family="Fraunces,serif" font-weight="700" font-size="40" fill="#ECF3EF">62</text>
+        <text x="60" y="80" text-anchor="middle" font-family="Plus Jakarta Sans,sans-serif" font-weight="700" font-size="11" fill="#A7BDB3">/ 100</text>
+      </svg>
+      <div class="scoremeta">
+        <div class="verdict">Enforceable in parts — real gaps to close</div>
+        <p class="body" style="margin-top:8px">Ethan's plan has clear, specific pieces you can hold the school to — and a few soft spots, in services and ESY, where the language would let the district off the hook. Here's where to push.</p>
+        <div class="subbars">
+          <div class="subbar"><div class="lab"><span>Compliance</span><span class="tnum">68/100</span></div><div class="track"><div class="fill" style="width:68%;background:var(--amber)"></div></div></div>
+          <div class="subbar"><div class="lab"><span>Enforceability</span><span class="tnum">56/100</span></div><div class="track"><div class="fill" style="width:56%;background:var(--red)"></div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="layout">
+    <!-- RAIL -->
+    <nav class="rail">
+      <button class="tab active" data-tab="overview"><span class="dot" style="background:#E6A860"></span>Overview</button>
+      <button class="tab" data-tab="svc"><span class="dot" style="background:var(--red)"></span>Service Delivery</button>
+      <button class="tab" data-tab="x"><span class="dot" style="background:var(--green)"></span>Present Levels</button>
+      <button class="tab" data-tab="x"><span class="dot" style="background:var(--amber)"></span>Annual Goals</button>
+      <button class="tab" data-tab="x"><span class="dot" style="background:var(--red)"></span>Extended School Year</button>
+      <button class="tab" data-tab="x"><span class="dot" style="background:var(--green)"></span>Accommodations</button>
+      <button class="tab" data-tab="x"><span class="dot" style="background:var(--amber)"></span>LRE &amp; Placement</button>
+    </nav>
+
+    <!-- CONTENT -->
+    <div class="content">
+
+      <!-- OVERVIEW PANEL: scorecard dashboard -->
+      <section data-panel="overview">
+        <div class="card">
+          <div class="eyebrow" style="color:var(--gold)">📊 Every section at a glance</div>
+          <p class="body">Tap any section on the left for the full breakdown. Red and amber are where your meeting time is best spent.</p>
+          <div style="display:grid;gap:13px;margin-top:18px">
+            <!-- row template -->
+            <div class="scrow" data-s="Present Levels (PLAAFP)" data-v="78" data-c="var(--green)" data-g="Strong"></div>
+            <div class="scrow" data-s="Annual Goals &amp; Objectives" data-v="64" data-c="var(--amber)" data-g="Needs work"></div>
+            <div class="scrow" data-s="Service Delivery Statement" data-v="55" data-c="var(--red)" data-g="Weak"></div>
+            <div class="scrow" data-s="Accommodations &amp; Modifications" data-v="80" data-c="var(--green)" data-g="Strong"></div>
+            <div class="scrow" data-s="Extended School Year (ESY)" data-v="42" data-c="var(--red)" data-g="Weak"></div>
+            <div class="scrow" data-s="LRE &amp; Placement" data-v="66" data-c="var(--amber)" data-g="Needs work"></div>
+            <div class="scrow" data-s="Progress Reporting" data-v="74" data-c="var(--green)" data-g="Strong"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="eyebrow" style="color:var(--green)">✅ What's genuinely strong</div>
+          <p class="body">Ethan's present levels use real baseline numbers, and his accommodations are specific and tied to his documented needs — those sections are written to hold up. Lead with these so the team knows you see what's working, not just what isn't.</p>
+        </div>
+
+        <div class="card">
+          <div class="eyebrow" style="color:var(--red)">⚠️ The 6 weak points that matter most</div>
+          <ol class="points" style="margin-top:14px">
+            <li><span class="n">1</span><span>OT cut from 60 → 10 min/month, consult-only, with no data behind the reduction.</span></li>
+            <li><span class="n">2</span><span>No dedicated 1:1 instructional minutes anywhere, despite documented writing fatigue.</span></li>
+            <li><span class="n">3</span><span>ESY declined in one line with no regression/recoupment data attached.</span></li>
+            <li><span class="n">4</span><span>Two annual goals say "will improve" with no baseline or measurement method.</span></li>
+            <li><span class="n">5</span><span>LRE justification is generic, not tied to Ethan's specific needs.</span></li>
+            <li><span class="n">6</span><span>Progress reporting says "progressing" with no data against targets.</span></li>
+          </ol>
+        </div>
+
+        <div class="card panel-2">
+          <div class="eyebrow" style="color:var(--gold)">🗣️ How to use this in the room</div>
+          <p class="body">Three rules keep you in control: ask questions, not statements; escalate only as far as you need; and turn any refusal into a Prior Written Notice. (Your full room playbook stays here, exactly as in the current report.)</p>
+        </div>
+      </section>
+
+      <!-- SERVICE DELIVERY PANEL -->
+      <section data-panel="svc" hidden>
+        <div class="card">
+          <div class="scorehead">
+            <div>
+              <div class="loc">📍 "Service Delivery Statement" · begins p. 24</div>
+              <h2>Service Delivery Statement</h2>
+            </div>
+            <span class="gradepill" style="color:var(--red);background:var(--red-bg);border-color:#50352c">● Weak</span>
+          </div>
+          <div class="tiles">
+            <div class="tile"><div class="tl">Section score</div><div class="tv" style="color:var(--red)">55<span style="font-size:15px;color:var(--muted)">/100</span></div><div class="tbar"><div class="fill" style="width:55%;background:var(--red)"></div></div></div>
+            <div class="tile"><div class="tl">Compliance</div><div class="tv" style="color:var(--amber)">60</div><div class="tbar"><div class="fill" style="width:60%;background:var(--amber)"></div></div></div>
+            <div class="tile"><div class="tl">Enforceability</div><div class="tv" style="color:var(--red)">48</div><div class="tbar"><div class="fill" style="width:48%;background:var(--red)"></div></div></div>
+            <div class="tile"><div class="tl">Issues flagged</div><div class="tv">3</div><div class="tl" style="margin-top:12px;color:var(--faint);font-weight:700;letter-spacing:0;text-transform:none">2 high · 1 medium</div></div>
+          </div>
+          <p class="body" style="margin-top:18px"><b style="color:var(--ink)">What we found:</b> Ethan's reading and writing minutes are spelled out clearly — that's strong. But his occupational therapy was cut from 60 min/month direct to "at least 10 min/month" consult-only, with no data behind the cut, and there are no dedicated one-on-one minutes anywhere, even though his records show he needs them.</p>
+        </div>
+
+        <div class="card" style="border-color:var(--gold)">
+          <div class="asklabel">▸ Your move — the one line to say</div>
+          <p class="body" style="margin-top:6px;font-size:16px;color:var(--ink)">"If each service isn't written with exact minutes, provider, and setting, I can't tell whether it was actually delivered — let's make every one of them specific today."</p>
+        </div>
+
+        <div class="card">
+          <div class="eyebrow" style="color:var(--gold)">📘 Understand it &amp; how to advocate</div>
+          <div class="grid2" style="margin-top:14px">
+            <div class="mini">
+              <div class="eyebrow" style="color:var(--green)">📗 In plain terms</div>
+              <p class="body">This is the page that promises exactly what services Ethan gets — how many minutes, how often, who delivers them, and where. It's the single most important page for holding the school accountable: if a service isn't delivered, you point to these numbers to prove it.</p>
+            </div>
+            <div class="mini">
+              <div class="eyebrow" style="color:var(--amber)">⚠️ Why this falls short</div>
+              <ol class="points">
+                <li><span class="n">1</span><span>OT dropped from 60 → 10 min/month and from direct to consult-only, with no data-based reason — exactly the unexplained cut <em>Endrew&nbsp;F.</em> and the CDE guidance flag.</span></li>
+                <li><span class="n">2</span><span>"At least 10 minutes" sets a floor with no ceiling and no schedule — unenforceable, because any amount technically satisfies it.</span></li>
+                <li><span class="n">3</span><span>No dedicated 1:1 minutes are written anywhere, though his present levels document writing fatigue and fine-motor difficulty.</span></li>
+              </ol>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="eyebrow" style="color:var(--gold)">❓ Questions to ask — in this order</div>
+          <div class="ladder">
+            <div class="step"><span class="sn">1</span><div><div class="slab">Start</div><div class="sq">"Can you walk me through, service by service, exactly how many minutes Ethan gets, who delivers each one — a licensed special educator, the interventionist, or a paraprofessional — and in what setting?"</div></div></div>
+            <div class="step"><span class="sn">2</span><div><div class="slab">If the answer is vague</div><div class="sq">"His OT went from 60 minutes direct to 10 minutes consult-only. What regression or progress data supported that reduction, and can you show it to me?"</div></div></div>
+            <div class="step"><span class="sn">3</span><div><div class="slab">If they won't commit</div><div class="sq">"Under 34 CFR §300.320(a)(7), services have to state minutes, frequency, provider, and setting so they're clear enough to implement. I'm asking that we write the specific numbers in today, and that any reduction and its data reasoning go in the Prior Written Notice."</div></div></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="ask">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+              <div class="eyebrow" style="color:var(--gold)">🎯 Your final ask</div>
+              <button class="copybtn" onclick="copyAsk(this)">Copy all</button>
+            </div>
+            <div class="block" style="margin-top:14px">
+              <div class="asklabel">The change to request</div>
+              <ol class="points">
+                <li><span class="n">1</span><span>Restore direct OT to 60 min/month (or state the specific amount his data supports), delivered one-on-one by a licensed OT, not consult-only.</span></li>
+                <li><span class="n">2</span><span>Replace "at least 10 minutes" with an exact figure, frequency, provider role, and setting — no open-ended floors.</span></li>
+                <li><span class="n">3</span><span>Add dedicated 1:1 instructional minutes for written work, tied to the writing-fatigue and fine-motor needs named in his present levels.</span></li>
+                <li><span class="n">4</span><span>Put any reduction, and the data behind it, into the Prior Written Notice.</span></li>
+              </ol>
+            </div>
+            <div class="block" style="margin-top:16px">
+              <div class="asklabel">Why this fits Ethan</div>
+              <ol class="points">
+                <li><span class="n">1</span><span>His present levels already document writing fatigue, slow handwriting, and fine-motor difficulty — the exact needs OT and 1:1 support address.</span></li>
+                <li><span class="n">2</span><span>A service can't be shown as delivered or missed unless its minutes, provider, and setting are specific — that specificity is your only proof later.</span></li>
+              </ol>
+            </div>
+            <div class="block" style="margin-top:16px">
+              <div class="asklabel">The law behind it</div>
+              <p class="body" style="margin-top:4px">Services must state minutes, frequency, provider, and setting clearly enough to implement, and a change to FAPE needs written notice with its data. <span class="lawtag">34 CFR §300.320(a)(7)</span> <span class="lawtag">§300.503 (PWN)</span> <span class="lawtag">Endrew F.</span></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+            <div class="eyebrow" style="color:var(--gold)">📄 Exact language to put in the IEP</div>
+            <button class="copybtn" style="position:static" onclick="copyLang(this)">Copy</button>
+          </div>
+          <p class="body" style="margin-top:4px;color:var(--muted)">Paste these straight into an email or an amendment request — no editing needed.</p>
+          <div class="copybox">
+            <ol>
+              <li>Occupational therapy: 60 minutes per month of <b>direct, one-on-one</b> service, provided by a licensed occupational therapist, in a separate setting.</li>
+              <li>Specialized instruction in written expression: 30 minutes, 3× per week, in a small group (ratio no greater than 1:5), delivered by a special educator in the resource room.</li>
+              <li>Dedicated 1:1 support for extended writing tasks: 20 minutes per school day, provided by a special educator or trained paraprofessional under the special educator's direction.</li>
+              <li>Progress on each service will be reported to the parent every 9 weeks, with data, concurrent with report cards.</li>
+            </ol>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="eyebrow" style="color:var(--gold)">📈 How progress gets tracked + services that back it up</div>
+          <p class="body">Progress on each service should be reported every 9 weeks with data, concurrent with report cards — and if a service stalls, the team reconvenes to revise. Right now the IEP says "progressing" with no numbers, which you can't hold them to.</p>
+          <ol class="points" style="margin-top:12px">
+            <li><span class="n">•</span><span>200 min/week small-group reading intervention — special educator, resource room</span></li>
+            <li><span class="n">•</span><span>60 min/month direct OT — licensed occupational therapist</span></li>
+            <li><span class="n">•</span><span>20 min/day 1:1 writing support — special educator or trained para</span></li>
+          </ol>
+        </div>
+      </section>
+
+      <!-- placeholder for other tabs -->
+      <section data-panel="x" hidden>
+        <div class="card"><p class="body">This section would open with its own score bar and the same full breakdown. (Mockup shows Overview + Service Delivery in detail.)</p></div>
+      </section>
+
+    </div>
+  </div>
+  <div class="endcta">
+    <a class="cta" href="/audit">Get my free audit →</a>
+    <a class="cta ghost" href="/">Back to home</a>
+  </div>
+  <p class="foot">AuditMyIEP is an educational tool, not legal advice, and does not replace a special-education attorney or advocate.</p>
+</div>
+
+<script>
+  // build overview score rows
+  document.querySelectorAll('.scrow').forEach(function(r){
+    var name=r.dataset.s, v=+r.dataset.v, c=r.dataset.c, g=r.dataset.g;
+    r.innerHTML =
+      '<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:6px">'+
+        '<span style="font-size:14.5px;font-weight:700">'+name+'</span>'+
+        '<span style="display:flex;align-items:center;gap:10px">'+
+          '<span style="font-size:12px;font-weight:800;color:'+c+'">'+g+'</span>'+
+          '<span class="tnum" style="font-size:15px;font-weight:800;color:'+c+'">'+v+'</span>'+
+        '</span>'+
+      '</div>'+
+      '<div class="track"><div class="fill" style="width:'+v+'%;background:'+c+'"></div></div>';
+    r.style.cursor='default';
+  });
+  // tabs
+  var tabs=document.querySelectorAll('.tab'), panels=document.querySelectorAll('[data-panel]');
+  tabs.forEach(function(t){ t.addEventListener('click',function(){
+    tabs.forEach(x=>x.classList.remove('active')); t.classList.add('active');
+    var key=t.dataset.tab;
+    panels.forEach(function(p){ p.hidden = (p.dataset.panel!==key); });
+    window.scrollTo({top:0,behavior:'smooth'});
+  });});
+  function flash(b,txt){var o=b.textContent;b.textContent=txt;setTimeout(()=>b.textContent=o,1400);}
+  function copyAsk(b){try{navigator.clipboard.writeText('(the full final-ask text copies here)');}catch(e){}flash(b,'Copied ✓');}
+  function copyLang(b){try{navigator.clipboard.writeText('(the exact IEP language copies here)');}catch(e){}flash(b,'Copied ✓');}
+</script>

@@ -1350,6 +1350,8 @@ def serve_react(path):
     # (and every other non-file path falls through to the React app).
     if path == '':
         return send_from_directory(BACKEND_DIR, 'landing.html')
+    if path == 'sample':
+        return send_from_directory(BACKEND_DIR, 'sample.html')
     full = os.path.join(FRONTEND_DIST, path)
     if path and os.path.exists(full):
         return send_from_directory(FRONTEND_DIST, path)
