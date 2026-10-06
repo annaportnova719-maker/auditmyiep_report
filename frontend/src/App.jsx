@@ -133,6 +133,9 @@ function UploadScreen({ onSubmit, errorMsg, paymentsEnabled, amountCents, config
           <svg viewBox="0 0 24 24" fill="none" className="mt-0.5 h-4 w-4 flex-shrink-0"><rect x="4" y="10" width="16" height="10" rx="2" stroke="currentColor" strokeWidth="1.8"/><path d="M8 10V7a4 4 0 0 1 8 0v3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
           Never saved · never used to train AI · deleted the second your report is ready.
         </p>
+        <p className="mt-2 rounded-xl border border-gold/40 bg-gold-soft/50 p-3 text-xs leading-relaxed text-foreground/85">
+          <span className="font-800 text-foreground">Best used before your annual meeting:</span> you're entitled to ask the school for your <span className="font-700">draft IEP</span> ahead of time. Upload that and walk in knowing exactly what to fix &mdash; before it's signed. (Already have a current IEP? Upload it any time to see what to raise.)
+        </p>
 
         <div
           className={`mt-2 rounded-2xl border-2 p-8 text-center transition-colors ${

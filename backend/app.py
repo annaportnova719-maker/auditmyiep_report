@@ -158,7 +158,7 @@ def _run_audit_job(job_id: str, pdf_bytes: bytes, payment_intent_id: str, email:
 
 STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY")
 STRIPE_PUBLISHABLE_KEY = os.environ.get("STRIPE_PUBLISHABLE_KEY")
-AUDIT_PRICE_CENTS = int(os.environ.get("AUDIT_PRICE_CENTS", "1900"))  # $19.00
+AUDIT_PRICE_CENTS = int(os.environ.get("AUDIT_PRICE_CENTS", "2700"))  # $27.00 regular (shown crossed-out while free)
 PAYMENTS_ENABLED = bool(STRIPE_SECRET_KEY and STRIPE_PUBLISHABLE_KEY)
 USED_PAYMENTS_PATH = os.path.join(os.path.dirname(__file__), "used_payments.csv")
 
@@ -173,7 +173,7 @@ BETA_USES_PATH = os.path.join(os.path.dirname(__file__), "beta_uses.csv")
 # FREE LAUNCH — when on, every audit is free (no payment step at all), while
 # the regular price still shows crossed out so visitors know it will cost later.
 # Flip it with the FREE_LAUNCH env var; turn it off to go back to paid.
-FREE_LAUNCH = (os.environ.get("FREE_LAUNCH") or "").strip().lower() in ("1", "true", "yes", "on")
+FREE_LAUNCH = (os.environ.get("FREE_LAUNCH", "true") or "").strip().lower() in ("1", "true", "yes", "on")
 
 
 def _beta_used_count() -> int:
