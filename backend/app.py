@@ -170,6 +170,11 @@ BETA_CODE = (os.environ.get("BETA_CODE") or "").strip()
 BETA_MAX = int(os.environ.get("BETA_MAX", "5"))
 BETA_USES_PATH = os.path.join(os.path.dirname(__file__), "beta_uses.csv")
 
+# FREE LAUNCH — when on, every audit is free (no payment step at all), while
+# the regular price still shows crossed out so visitors know it will cost later.
+# Flip it with the FREE_LAUNCH env var; turn it off to go back to paid.
+FREE_LAUNCH = (os.environ.get("FREE_LAUNCH") or "").strip().lower() in ("1", "true", "yes", "on")
+
 
 def _beta_used_count() -> int:
     try:
@@ -1126,6 +1131,7 @@ def stripe_config():
         "enabled": PAYMENTS_ENABLED,
         "publishable_key": STRIPE_PUBLISHABLE_KEY or "",
         "amount_cents": AUDIT_PRICE_CENTS,
+        "free_launch": FREE_LAUNCH,
     })
 
 
@@ -1176,9 +1182,9 @@ def audit():
     # Payment gate — must have a real, unused, paid PaymentIntent (skipped
     # entirely in FREE mode when Stripe keys aren't configured).
     payment_intent_id = request.form.get("payment_intent_id", "")
-    is_beta = _beta_ok(request.form.get("beta_code", ""))
-    if is_beta:
-        payment_intent_id = ""  # free beta audit: no payment, no capture
+    is_beta = (not FREE_LAUNCH) and _beta_ok(request.form.get("beta_code", ""))
+    if FREE_LAUNCH or is_beta:
+        payment_intent_id = ""  # free run: no payment, no capture
     else:
         pay_error = _verify_paid_or_error(payment_intent_id)
         if pay_error:

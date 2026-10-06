@@ -81,7 +81,7 @@ function Logo() {
   );
 }
 
-function UploadScreen({ onSubmit, errorMsg, paymentsEnabled, amountCents, configLoaded }) {
+function UploadScreen({ onSubmit, errorMsg, paymentsEnabled, amountCents, configLoaded, freeLaunch }) {
   const { t } = useI18n();
   const [file, setFile] = useState(null);
   const [fileError, setFileError] = useState('');
@@ -129,6 +129,10 @@ function UploadScreen({ onSubmit, errorMsg, paymentsEnabled, amountCents, config
           <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gold text-[#0E1C17] text-xs">1</span>
           Upload your child's IEP (PDF)
         </div>
+        <p className="mt-2 flex items-start gap-1.5 text-xs font-700 leading-relaxed text-good">
+          <svg viewBox="0 0 24 24" fill="none" className="mt-0.5 h-4 w-4 flex-shrink-0"><rect x="4" y="10" width="16" height="10" rx="2" stroke="currentColor" strokeWidth="1.8"/><path d="M8 10V7a4 4 0 0 1 8 0v3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
+          Never saved · never used to train AI · deleted the second your report is ready.
+        </p>
 
         <div
           className={`mt-2 rounded-2xl border-2 p-8 text-center transition-colors ${
@@ -204,12 +208,15 @@ function UploadScreen({ onSubmit, errorMsg, paymentsEnabled, amountCents, config
 
         {/* Privacy promise — pulled out of the fine print because it's the
             whole reason to trust this tool. Green = safe. */}
-        <div className="mt-5 flex items-start gap-3 rounded-2xl border border-good/30 bg-good-bg p-4">
+        <div className="mt-5 flex items-start gap-3 rounded-2xl border-2 border-good/40 bg-good-bg p-4">
           <svg viewBox="0 0 24 24" fill="none" className="mt-0.5 h-5 w-5 flex-shrink-0 text-good">
             <rect x="4" y="10" width="16" height="10" rx="2" stroke="currentColor" strokeWidth="1.8" />
             <path d="M8 10V7a4 4 0 0 1 8 0v3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
           </svg>
-          <p className="text-sm font-500 leading-relaxed text-foreground/90">{t('audit.privacy')}</p>
+          <div>
+            <p className="text-sm font-800 text-good">Your information is protected</p>
+            <p className="mt-1 text-sm font-500 leading-relaxed text-foreground/90">{t('audit.privacy')} <a href="/privacy" className="font-700 text-primary underline">Read our Privacy Policy</a>.</p>
+          </div>
         </div>
 
         {/* Step 2 — email, in a bright gold box so nobody scrolls past it. */}
@@ -240,16 +247,18 @@ function UploadScreen({ onSubmit, errorMsg, paymentsEnabled, amountCents, config
           <span>{t('audit.consent')}</span>
         </label>
 
-        <details className="mt-4">
-          <summary className="cursor-pointer text-xs font-700 text-muted-foreground hover:text-foreground">Have a beta code?</summary>
-          <input
-            type="text"
-            value={betaCode}
-            onChange={(e) => setBetaCode(e.target.value)}
-            placeholder="Enter beta code"
-            className="mt-2 w-full rounded-xl border-2 border-border bg-card px-4 py-3 text-base font-500 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-2 focus:ring-ring"
-          />
-        </details>
+        {paymentsEnabled && !freeLaunch && (
+          <details className="mt-4">
+            <summary className="cursor-pointer text-xs font-700 text-muted-foreground hover:text-foreground">Have a beta code?</summary>
+            <input
+              type="text"
+              value={betaCode}
+              onChange={(e) => setBetaCode(e.target.value)}
+              placeholder="Enter beta code"
+              className="mt-2 w-full rounded-xl border-2 border-border bg-card px-4 py-3 text-base font-500 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-2 focus:ring-ring"
+            />
+          </details>
+        )}
 
         <button
           type="button"
@@ -257,14 +266,20 @@ function UploadScreen({ onSubmit, errorMsg, paymentsEnabled, amountCents, config
           onClick={() => onSubmit(file, email, betaCode.trim())}
           className="mt-5 w-full rounded-xl bg-[#3DA876] px-5 py-3.5 text-base font-800 font-heading text-[#08140F] shadow-brand hover:bg-[#53CE9B] transition-all disabled:bg-muted disabled:text-muted-foreground disabled:shadow-none disabled:cursor-not-allowed disabled:hover:bg-muted"
         >
-          {betaCode.trim() ? 'Run my free audit' : (paymentsEnabled ? `Continue to payment — ${priceLabel}` : t('audit.run'))}
+          {freeLaunch ? 'Get my free audit' : (betaCode.trim() ? 'Run my free audit' : (paymentsEnabled ? `Continue to payment — ${priceLabel}` : t('audit.run')))}
         </button>
 
-        <p className="mt-3 text-center text-xs leading-relaxed text-muted-foreground">
-          {paymentsEnabled
-            ? `One-time ${priceLabel}. Your scored report shows on screen right after payment — usually under a minute — with the full breakdown emailed to you as a PDF.`
-            : 'Your scored report shows on screen first — usually under a minute — with the full breakdown emailed to you as a PDF.'}
-        </p>
+        {freeLaunch ? (
+          <p className="mt-3 text-center text-sm leading-relaxed text-foreground/80">
+            <span className="font-800 text-good">Free for our founding families</span> — <span className="line-through text-muted-foreground">{priceLabel}</span> once we launch. Your scored report shows on screen in about a minute, with the full breakdown emailed to you as a PDF.
+          </p>
+        ) : (
+          <p className="mt-3 text-center text-xs leading-relaxed text-muted-foreground">
+            {paymentsEnabled
+              ? `One-time ${priceLabel}. Your scored report shows on screen right after payment — usually under a minute — with the full breakdown emailed to you as a PDF.`
+              : 'Your scored report shows on screen first — usually under a minute — with the full breakdown emailed to you as a PDF.'}
+          </p>
+        )}
       </div>
     </div>
   );
@@ -489,6 +504,7 @@ function AppInner() {
   }, []);
 
   const paymentsEnabled = Boolean(stripeCfg?.enabled);
+  const freeLaunch = Boolean(stripeCfg?.free_launch);
   const amountCents = stripeCfg?.amount_cents || 0;
 
   // Called from the upload screen. In free mode it runs the audit straight
@@ -497,6 +513,11 @@ function AppInner() {
     setErrorMsg('');
     setIepFile(file);
     setParentEmail(email || '');
+
+    if (freeLaunch) {
+      runAudit(file, email, '');
+      return;
+    }
 
     if (betaCode) {
       runAudit(file, email, '', betaCode);
@@ -661,6 +682,7 @@ function AppInner() {
         onSubmit={handleUploadSubmit}
         errorMsg={errorMsg}
         paymentsEnabled={paymentsEnabled}
+        freeLaunch={freeLaunch}
         amountCents={amountCents}
         configLoaded={stripeCfg !== null}
       />
