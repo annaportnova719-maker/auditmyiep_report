@@ -251,16 +251,18 @@ function UploadScreen({ onSubmit, errorMsg, paymentsEnabled, amountCents, config
         </label>
 
         {paymentsEnabled && !freeLaunch && (
-          <details className="mt-4">
-            <summary className="cursor-pointer text-xs font-700 text-muted-foreground hover:text-foreground">Have a beta code?</summary>
+          <div className="mt-4">
+            <label htmlFor="betaCode" className="block text-base font-800 text-foreground">Have a beta code?</label>
+            <p className="mt-1 text-sm text-muted-foreground">Enter it below to run your free audit.</p>
             <input
+              id="betaCode"
               type="text"
               value={betaCode}
               onChange={(e) => setBetaCode(e.target.value)}
-              placeholder="Enter beta code"
+              placeholder="Enter your beta code"
               className="mt-2 w-full rounded-xl border-2 border-border bg-card px-4 py-3 text-base font-500 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-2 focus:ring-ring"
             />
-          </details>
+          </div>
         )}
 
         <button
