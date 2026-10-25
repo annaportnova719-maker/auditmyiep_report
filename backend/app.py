@@ -472,6 +472,14 @@ def _overview_once(content) -> dict:
                     raise _RetryableAudit("The section list came back in an unexpected format.")
             if not isinstance(sections, list) or not sections:
                 raise _RetryableAudit("The audit came back without any section findings.")
+            # Claude occasionally returns weak_points as a single string (or strengths
+            # as a list) even though the schema says otherwise — normalize so the UI
+            # and PDF never choke on an unexpected shape.
+            result["weak_points"] = _as_points(result.get("weak_points"))
+            if isinstance(result.get("strengths"), list):
+                result["strengths"] = " ".join(
+                    str(x).strip() for x in result["strengths"] if str(x).strip()
+                )
             return result
 
     raise _RetryableAudit("Claude did not return a structured audit.")

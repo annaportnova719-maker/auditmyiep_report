@@ -416,10 +416,10 @@ export default function AuditReportView({ report, iepFile, title, meta, initialE
                 <span className="font-700 text-good">{t('report.strengths')}:</span> {report.strengths}
               </p>
               <h3 className="mt-5 font-heading text-2xl font-800 text-crit">
-                The {report.weak_points?.length || 0} {t('report.weakPoints')}:
+                The {(Array.isArray(report.weak_points) ? report.weak_points.length : 0)} {t('report.weakPoints')}:
               </h3>
               <ol className="mt-2 space-y-2.5">
-                {(report.weak_points || []).map((w, i) => (
+                {(Array.isArray(report.weak_points) ? report.weak_points : []).map((w, i) => (
                   <li key={i} className="flex gap-3 text-sm leading-relaxed text-foreground/85">
                     <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-crit/15 text-crit text-xs font-700">{i + 1}</span>
                     <span>{w}</span>
